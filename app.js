@@ -13,11 +13,11 @@
 // An EMPTY WORKER_URL means local-only mode: everything works fully
 // offline using localStorage, with no network calls at all. Fill both in
 // (see README) before sharing this app across devices.
-const WORKER_URL = "";
+const WORKER_URL = "https://sightwords-training-worker.jhenningbuchholz.workers.dev";
 // Must match the APP_KEY secret set on the Worker. Not real security (it's
 // visible in this public source) — just a deterrent against casual randoms
 // who stumble on the Worker URL.
-const APP_KEY = "";
+const APP_KEY = "ew6hl1snory5udxf7zvbkj4g98cm";
 
 const LS = {
   lang: "swt-lang",
