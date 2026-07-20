@@ -238,7 +238,9 @@ button { cursor: pointer; }
 .picker-body {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   flex: 1;
+  overflow-y: auto;
 }
 .picker-hero {
   font-size: 4rem;
