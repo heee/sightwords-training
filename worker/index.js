@@ -9,8 +9,9 @@
 //                            -> merges: overwrites the given word entries, and
 //                               days[day] = max(existing, dayCount). Creates the kid if missing.
 //   POST /register-kid   -> { kid } -> creates an empty kid record with default settings if absent
-//   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay }, rename? }
-//                            -> clamps ranges (5-50, 0-10); rename moves the whole kid record
+//   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay }, rename?, emoji? }
+//                            -> clamps ranges (5-50, 0-10); rename moves the whole kid record;
+//                               emoji must be one of KID_EMOJIS or it's ignored
 //   POST /reset-kid      -> { kid } -> clears en/de progress + days, keeps kid + settings
 //   POST /delete-kid     -> { kid } -> removes kid entirely
 //
@@ -25,6 +26,7 @@
 //   ALLOWED_ORIGIN (var)     e.g. "https://heee.github.io" (or "*" to allow any origin)
 
 const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3 };
+const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
 const MAX_WORDS_PER_SESSION = 50;
 const MIN_WORDS_PER_SESSION = 5;
 const MAX_NEW_WORDS_PER_DAY = 10;
@@ -118,11 +120,13 @@ export default {
       const rename = typeof body?.rename === "string" ? body.rename.trim().slice(0, 40) : "";
       const wordsPerSession = clamp(Math.floor(Number(body?.settings?.wordsPerSession)), MIN_WORDS_PER_SESSION, MAX_WORDS_PER_SESSION, DEFAULT_SETTINGS.wordsPerSession);
       const newWordsPerDay = clamp(Math.floor(Number(body?.settings?.newWordsPerDay)), MIN_NEW_WORDS_PER_DAY, MAX_NEW_WORDS_PER_DAY, DEFAULT_SETTINGS.newWordsPerDay);
+      const emoji = KID_EMOJIS.includes(body?.emoji) ? body.emoji : "";
 
       try {
         await commitMutation(env, (data) => {
           if (!data.kids[kid]) data.kids[kid] = emptyKid();
           data.kids[kid].settings = { wordsPerSession, newWordsPerDay };
+          if (emoji) data.kids[kid].emoji = emoji;
           if (rename && rename !== kid) {
             data.kids[rename] = data.kids[kid];
             delete data.kids[kid];

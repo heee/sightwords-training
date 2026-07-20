@@ -85,6 +85,10 @@ function hashString(str) {
 
 function kidEmoji(name) { return KID_EMOJIS[hashString(name) % KID_EMOJIS.length]; }
 
+// A kid's emoji defaults to a deterministic hash of their name, but can be
+// overridden per-kid in Settings — the stored choice always wins.
+function kidEmojiFor(kidRecord, name) { return (kidRecord && kidRecord.emoji) || kidEmoji(name); }
+
 function clampNum(n, min, max, fallback) {
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
@@ -148,6 +152,7 @@ const T = {
     themeLight: "☀️ Light",
     themeDark: "🌙 Dark",
     general: "General",
+    avatarLabel: "Avatar",
     kidName: "Kid's name",
     wordsPerSession: "Words per session",
     newWordsPerDay: "New words per day",
@@ -211,6 +216,7 @@ const T = {
     themeLight: "☀️ Hell",
     themeDark: "🌙 Dunkel",
     general: "Allgemein",
+    avatarLabel: "Avatar",
     kidName: "Name des Kindes",
     wordsPerSession: "Wörter pro Sitzung",
     newWordsPerDay: "Neue Wörter pro Tag",
@@ -276,6 +282,7 @@ function applyStaticTranslations() {
   $("theme-btn-light").textContent = t("themeLight");
   $("theme-btn-dark").textContent = t("themeDark");
   $("general-heading").textContent = t("general");
+  $("label-avatar").textContent = t("avatarLabel");
   $("label-kid-name").textContent = t("kidName");
   $("label-words-per-session").textContent = t("wordsPerSession");
   $("label-new-words-per-day").textContent = t("newWordsPerDay");
@@ -907,7 +914,7 @@ function renderPicker() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "kid-card" + (name === state.currentKid ? " selected" : "");
-    btn.innerHTML = `<span class="kid-avatar">${kidEmoji(name)}</span><span class="kid-name">${escapeHtml(name)}</span>`;
+    btn.innerHTML = `<span class="kid-avatar">${kidEmojiFor(data.kids[name], name)}</span><span class="kid-name">${escapeHtml(name)}</span>`;
     btn.addEventListener("click", () => selectKid(name));
     list.appendChild(btn);
   }
@@ -957,7 +964,7 @@ function renderHome() {
   const langData = kidRecord[lang];
   const today = todayStr();
 
-  $("home-greeting").textContent = t("greeting", kid, kidEmoji(kid));
+  $("home-greeting").textContent = t("greeting", kid, kidEmojiFor(kidRecord, kid));
 
   const streak = computeStreak(langData.days, today);
   $("streak-text").textContent = t("streak", streak);
@@ -1119,6 +1126,19 @@ $("btn-summary-home").addEventListener("click", () => showScreen("screen-home"))
 
 $("btn-settings-back").addEventListener("click", () => showScreen("screen-home"));
 
+function renderEmojiPicker(selected) {
+  const el = $("emoji-picker");
+  el.innerHTML = KID_EMOJIS.map((e) => `
+    <button type="button" class="emoji-btn${e === selected ? " selected" : ""}" data-emoji="${e}" aria-label="${e}">${e}</button>
+  `).join("");
+}
+
+$("emoji-picker").addEventListener("click", (e) => {
+  const btn = e.target.closest(".emoji-btn");
+  if (!btn) return;
+  $("emoji-picker").querySelectorAll(".emoji-btn").forEach((b) => b.classList.toggle("selected", b === btn));
+});
+
 function renderSettings() {
   const kid = state.currentKid;
   const data = getData();
@@ -1128,6 +1148,7 @@ function renderSettings() {
   $("settings-kid-name").value = kid;
   $("settings-words-per-session").value = kidRecord.settings.wordsPerSession;
   $("settings-new-words-per-day").value = kidRecord.settings.newWordsPerDay;
+  renderEmojiPicker(kidEmojiFor(kidRecord, kid));
 
   $("confirm-reset").classList.add("hidden");
   $("confirm-delete-kid").classList.add("hidden");
@@ -1187,6 +1208,7 @@ $("btn-settings-save").addEventListener("click", async () => {
   const wordsPerSession = clampNum(parseInt($("settings-words-per-session").value, 10), 5, 50, DEFAULT_SETTINGS.wordsPerSession);
   const newWordsPerDay = clampNum(parseInt($("settings-new-words-per-day").value, 10), 0, 10, DEFAULT_SETTINGS.newWordsPerDay);
   const settings = { wordsPerSession, newWordsPerDay };
+  const emoji = $("emoji-picker").querySelector(".emoji-btn.selected")?.dataset.emoji || "";
 
   const data = getData();
   const rename = newName !== oldName ? newName : undefined;
@@ -1197,6 +1219,7 @@ $("btn-settings-save").addEventListener("click", async () => {
   }
   const targetName = rename || oldName;
   data.kids[targetName].settings = settings;
+  if (emoji) data.kids[targetName].emoji = emoji;
   setData(data);
 
   if (rename) {
@@ -1204,7 +1227,7 @@ $("btn-settings-save").addEventListener("click", async () => {
     localStorage.setItem(LS.lastKid, targetName);
   }
 
-  queueOp({ type: "settings", key: `settings:${oldName}`, payload: { kid: oldName, settings, rename } });
+  queueOp({ type: "settings", key: `settings:${oldName}`, payload: { kid: oldName, settings, rename, emoji } });
   await flushQueue().catch(() => {});
 
   toast(t("settingsSaved"));
