@@ -117,7 +117,8 @@ const LEVELS = {
     { id: "g23", startIndex: 133 }, // after first grade(41)
   ],
   de: [
-    { id: "k1", startIndex: 0 },
+    { id: "prek", startIndex: 0 },
+    { id: "k1", startIndex: 60 },   // after the 60 core Vorschule words (der..heute)
     { id: "k2", startIndex: 210 },  // after the existing Klasse-1 words
   ],
 };

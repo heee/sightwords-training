@@ -28,7 +28,7 @@ const LS = {
   newCount: "swt-new-today",
 };
 
-const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "k1" } };
+const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "prek" } };
 const LEVEL_IDS = { en: LEVELS.en.map((l) => l.id), de: LEVELS.de.map((l) => l.id) };
 
 // Looks up the flat-list start index for a given language + level id —
@@ -170,6 +170,7 @@ const T = {
     levelEnPrek: "Pre-K / K",
     levelEnG1: "1st grade",
     levelEnG23: "2nd/3rd grade",
+    levelDePrek: "Pre-K / K",
     levelDeK1: "Grade 1",
     levelDeK2: "Grade 2",
     saveSettings: "Save settings",
@@ -242,6 +243,7 @@ const T = {
     levelEnPrek: "Vorschule",
     levelEnG1: "1. Klasse",
     levelEnG23: "2./3. Klasse",
+    levelDePrek: "Vorschule",
     levelDeK1: "Klasse 1",
     levelDeK2: "Klasse 2",
     saveSettings: "Einstellungen speichern",
@@ -1182,7 +1184,7 @@ $("emoji-picker").addEventListener("click", (e) => {
 // the T dictionary so renderLevelPicker can localize each button's text.
 const LEVEL_LABEL_KEYS = {
   en: { prek: "levelEnPrek", g1: "levelEnG1", g23: "levelEnG23" },
-  de: { k1: "levelDeK1", k2: "levelDeK2" },
+  de: { prek: "levelDePrek", k1: "levelDeK1", k2: "levelDeK2" },
 };
 
 function renderLevelPicker(pickerId, lang, selectedId) {

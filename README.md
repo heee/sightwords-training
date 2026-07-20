@@ -169,7 +169,8 @@ words ordered by whichever is due soonest.
 
 Each kid also has a **reading level per language**, set in Settings > General
 ("Reading level 🇺🇸" / "Reading level 🇩🇪"): Pre-K/K, 1st grade, or 2nd/3rd
-grade for English; Grade 1 or Grade 2 for German. The level picks an entry
+grade for English; Pre-K/K (Vorschule), Grade 1, or Grade 2 for German. The
+level picks an entry
 point into that language's word list (`LEVELS` in `words.js`) — any word
 *before* that point is treated as **"assumed known"** and is never
 introduced as a brand-new word for that kid.

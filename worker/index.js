@@ -10,7 +10,7 @@
 //                               days[day] = max(existing, dayCount). Creates the kid if missing.
 //   POST /register-kid   -> { kid } -> creates an empty kid record with default settings if absent
 //   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay,
-//                              levels: { en: "prek"|"g1"|"g23", de: "k1"|"k2" } }, rename?, emoji? }
+//                              levels: { en: "prek"|"g1"|"g23", de: "prek"|"k1"|"k2" } }, rename?, emoji? }
 //                            -> clamps ranges (5-50, 0-10); invalid/missing levels fall back to
 //                               defaults ("prek"/"k1"); rename moves the whole kid record;
 //                               emoji must be one of KID_EMOJIS or it's ignored
@@ -27,13 +27,13 @@
 //                            deterrent only, not real auth (it's visible in client source)
 //   ALLOWED_ORIGIN (var)     e.g. "https://heee.github.io" (or "*" to allow any origin)
 
-const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "k1" } };
+const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "prek" } };
 const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
 const MAX_WORDS_PER_SESSION = 50;
 const MIN_WORDS_PER_SESSION = 5;
 const MAX_NEW_WORDS_PER_DAY = 10;
 const MIN_NEW_WORDS_PER_DAY = 0;
-const VALID_LEVELS = { en: ["prek", "g1", "g23"], de: ["k1", "k2"] };
+const VALID_LEVELS = { en: ["prek", "g1", "g23"], de: ["prek", "k1", "k2"] };
 
 function emptyKid() {
   return {
