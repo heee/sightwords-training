@@ -48,6 +48,15 @@ const state = {
   session: null,
   recognizing: false,
   autoAdvanceTimer: null,
+  // Cloud speech (Groq) recording state — session-scoped, released on
+  // session end / screen change (see releaseMic()).
+  micStream: null,
+  micAudioCtx: null,
+  micRecorder: null,
+  micRecording: false,
+  micBusy: false, // true while a clip is uploaded/transcribed ("Thinking…")
+  micLevelTimer: null,
+  micRecordTimer: null,
 };
 
 // Theme is a user choice (Settings > Appearance), not derived from the
@@ -143,6 +152,8 @@ const T = {
     whatWord: "What word is this?",
     tapToListen: "Tap to listen",
     listening: "Listening…",
+    thinking: "Thinking…",
+    micDenied: "Microphone access is needed — allow it in Settings and try again.",
     correctCheer: "Yes! 🎉",
     notQuite: "Not quite!",
     noSpeechHeard: "I didn't hear you — try again!",
@@ -216,6 +227,8 @@ const T = {
     whatWord: "Welches Wort ist das?",
     tapToListen: "Zum Zuhören tippen",
     listening: "Ich höre…",
+    thinking: "Hmm, mal sehen…",
+    micDenied: "Mikrofonzugriff wird benötigt — bitte in den Einstellungen erlauben und nochmal versuchen.",
     correctCheer: "Richtig! 🎉",
     notQuite: "Nicht ganz!",
     noSpeechHeard: "Ich habe dich nicht gehört — versuch's nochmal!",
@@ -653,6 +666,7 @@ function recordAnswer(word, correct) {
 }
 
 function endSession() {
+  releaseMic();
   const s = state.session;
   if (s) {
     if (s.practicedCount > 0) {
@@ -903,9 +917,251 @@ function updateMicUI(listening) {
   if (listening) $("mic-status").textContent = t("listening");
 }
 
+// ------------------- speech: cloud transcription (Groq, via Worker) -------------------
+// Primary voice-capture path when available: records a short clip and sends
+// it to the Worker's /transcribe endpoint (Groq whisper-large-v3). Falls
+// back to the Web Speech API above when the Worker/key isn't configured, or
+// when this browser can't record audio at all (no MediaRecorder/getUserMedia).
+
+const cloudSpeechAvailable = !!WORKER_URL && typeof MediaRecorder !== "undefined"
+  && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+// Flips true for the rest of the page session the first time /transcribe
+// reports it isn't configured (501) — every subsequent tap uses Web Speech
+// instead of re-trying the cloud endpoint.
+let cloudSpeechDisabled = false;
+
+function cloudModeActive() { return cloudSpeechAvailable && !cloudSpeechDisabled; }
+
+// Phrases Whisper is prone to hallucinating on silence/background noise
+// (video outro captions it saw a lot of in training). Checked against the
+// raw (lower-cased, unnormalized) transcript so punctuation like "www."
+// still matches.
+const HALLUCINATION_PHRASES = [
+  "untertitel", "amara.org", "subtitles", "subscribe", "www.", "copyright",
+  "vielen dank fürs zuschauen", "thanks for watching", "thank you for watching",
+];
+
+// Decides whether a cloud transcript should be treated as "didn't hear
+// anything usable" rather than fed into the matcher — covers empty results,
+// known Whisper hallucination phrases, and long rambles that don't match the
+// target word (far more likely noise misheard as a sentence than an actual
+// wrong answer).
+function isNoSpeechTranscript(rawText, targetWord, lang) {
+  const norm = normalizeTranscript(rawText || "");
+  if (!norm) return true;
+  const lower = String(rawText).toLowerCase();
+  if (HALLUCINATION_PHRASES.some((p) => lower.includes(p))) return true;
+  const tokenCount = norm.split(" ").filter(Boolean).length;
+  if (tokenCount > 6 && !isMatch([rawText], targetWord, lang)) return true;
+  return false;
+}
+
+// Lazily requests the mic once per practice session and keeps the stream
+// open (avoids repeated permission-prompt churn/latency on every word) —
+// released by releaseMic() on session end or screen change.
+async function ensureMicStream() {
+  if (state.micStream) return state.micStream;
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  state.micStream = stream;
+  return stream;
+}
+
+function pickMimeType() {
+  const candidates = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"];
+  for (const c of candidates) {
+    if (MediaRecorder.isTypeSupported(c)) return c;
+  }
+  return undefined; // browser default
+}
+
+// Releases every mic-related resource. Safe to call any time (including
+// when nothing is active) — must be called on every exit from the practice
+// screen so the browser's recording indicator always goes away.
+function releaseMic() {
+  if (state.micRecordTimer) { clearTimeout(state.micRecordTimer); state.micRecordTimer = null; }
+  if (state.micLevelTimer) { clearInterval(state.micLevelTimer); state.micLevelTimer = null; }
+  if (state.micRecorder && state.micRecorder.state !== "inactive") {
+    try { state.micRecorder.stop(); } catch (e) { /* ignore */ }
+  }
+  state.micRecorder = null;
+  state.micRecording = false;
+  state.micBusy = false;
+  if (state.micAudioCtx) {
+    try { state.micAudioCtx.close(); } catch (e) { /* ignore */ }
+    state.micAudioCtx = null;
+  }
+  if (state.micStream) {
+    state.micStream.getTracks().forEach((tr) => tr.stop());
+    state.micStream = null;
+  }
+}
+
+// Mic tap in cloud mode: first tap starts recording, a second tap while
+// recording stops it early; recording also auto-stops after 3.5s. Runs a
+// WebAudio level meter alongside the recording to detect near-silence.
+async function startCloudListening() {
+  if (state.micBusy || !state.session) return;
+  if (state.micRecording) {
+    stopCloudRecording();
+    return;
+  }
+
+  let stream;
+  try {
+    stream = await ensureMicStream();
+  } catch (e) {
+    toast(t("micDenied"));
+    $("mic-status").textContent = t("tapToListen");
+    return;
+  }
+
+  // One AudioContext per session, reused across taps; resume() here runs
+  // inside the tap's user-gesture handler, which iOS requires.
+  if (!state.micAudioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) state.micAudioCtx = new AudioCtx();
+  }
+  let analyser = null;
+  let source = null;
+  const dataArray = new Uint8Array(2048);
+  let peakRms = 0;
+  if (state.micAudioCtx) {
+    if (state.micAudioCtx.state === "suspended") {
+      try { await state.micAudioCtx.resume(); } catch (e) { /* ignore */ }
+    }
+    try {
+      analyser = state.micAudioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      source = state.micAudioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+    } catch (e) { analyser = null; source = null; }
+  }
+  if (analyser) {
+    state.micLevelTimer = setInterval(() => {
+      analyser.getByteTimeDomainData(dataArray);
+      let sumSquares = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        const v = (dataArray[i] - 128) / 128;
+        sumSquares += v * v;
+      }
+      const rms = Math.sqrt(sumSquares / dataArray.length);
+      if (rms > peakRms) peakRms = rms;
+    }, 100);
+  }
+
+  const mimeType = pickMimeType();
+  let recorder;
+  try {
+    recorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+  } catch (e) {
+    if (state.micLevelTimer) { clearInterval(state.micLevelTimer); state.micLevelTimer = null; }
+    handleNoSpeech();
+    return;
+  }
+
+  const chunks = [];
+  recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+  recorder.onstop = () => {
+    if (state.micLevelTimer) { clearInterval(state.micLevelTimer); state.micLevelTimer = null; }
+    if (analyser) { try { analyser.disconnect(); } catch (e) { /* ignore */ } }
+    if (source) { try { source.disconnect(); } catch (e) { /* ignore */ } }
+    state.micRecording = false;
+    updateMicUI(false);
+    const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || "audio/webm" });
+    finishCloudRecording(blob, peakRms);
+  };
+
+  state.micRecorder = recorder;
+  state.micRecording = true;
+  try {
+    recorder.start();
+  } catch (e) {
+    state.micRecording = false;
+    if (state.micLevelTimer) { clearInterval(state.micLevelTimer); state.micLevelTimer = null; }
+    handleNoSpeech();
+    return;
+  }
+  updateMicUI(true);
+
+  state.micRecordTimer = setTimeout(() => { stopCloudRecording(); }, 3500);
+}
+
+function stopCloudRecording() {
+  if (state.micRecordTimer) { clearTimeout(state.micRecordTimer); state.micRecordTimer = null; }
+  if (state.micRecorder && state.micRecorder.state !== "inactive") {
+    try { state.micRecorder.stop(); } catch (e) { /* ignore */ }
+  }
+}
+
+async function finishCloudRecording(blob, peakRms) {
+  if (!state.session) return; // session ended / screen left while the clip was recording
+  if (peakRms < 0.015) {
+    handleNoSpeech();
+    return;
+  }
+  state.micBusy = true;
+  $("mic-status").textContent = t("thinking");
+
+  let res;
+  try {
+    res = await fetch(WORKER_URL + "/transcribe?lang=" + state.session.lang, {
+      method: "POST",
+      headers: { "X-App-Key": APP_KEY, "Content-Type": blob.type || "audio/webm" },
+      body: blob,
+    });
+  } catch (e) {
+    state.micBusy = false;
+    console.error("Transcription request failed", e);
+    handleNoSpeech();
+    return;
+  }
+
+  if (res.status === 501) {
+    cloudSpeechDisabled = true;
+    state.micBusy = false;
+    if (speechSupported) {
+      $("mic-status").textContent = t("tapToListen");
+    } else {
+      $("speech-unsupported-banner").classList.remove("hidden");
+      $("btn-mic").disabled = true;
+      $("mic-status").textContent = "";
+    }
+    return;
+  }
+
+  if (!res.ok) {
+    state.micBusy = false;
+    const text = await res.text().catch(() => "");
+    console.error(`Transcription failed (${res.status})`, text.slice(0, 200));
+    handleNoSpeech();
+    return;
+  }
+
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    data = {};
+  }
+  state.micBusy = false;
+  const text = data && typeof data.text === "string" ? data.text : "";
+  handleCloudTranscript(text);
+}
+
+function handleCloudTranscript(text) {
+  const word = currentWord();
+  if (!word || !state.session) return;
+  if (isNoSpeechTranscript(text, word, state.session.lang)) {
+    handleNoSpeech();
+    return;
+  }
+  handleRecognitionResult([text]);
+}
+
 // ------------------- screens / render -------------------
 
 function showScreen(id) {
+  if (state.screen === "screen-practice" && id !== "screen-practice") releaseMic();
   document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
   $(id).classList.add("active");
   state.screen = id;
@@ -1037,7 +1293,7 @@ $("btn-start-practice").addEventListener("click", () => {
 
 // ---- practice screen ----
 
-if (!speechSupported) {
+if (!cloudSpeechAvailable && !speechSupported) {
   $("speech-unsupported-banner").classList.remove("hidden");
   $("btn-mic").disabled = true;
 }
@@ -1047,7 +1303,7 @@ function renderPracticeWord() {
   const word = currentWord();
   $("practice-word").textContent = word || "";
   $("practice-prompt").textContent = t("whatWord");
-  $("mic-status").textContent = speechSupported ? t("tapToListen") : "";
+  $("mic-status").textContent = (cloudModeActive() || speechSupported) ? t("tapToListen") : "";
   $("feedback-wrong").classList.add("hidden");
   clearTimeout(state.autoAdvanceTimer);
   updatePracticeProgress();
@@ -1123,7 +1379,15 @@ function handleWrong() {
 }
 
 $("btn-mic").addEventListener("click", () => {
-  if (!speechSupported || state.recognizing || !state.session) return;
+  if (!state.session) return;
+  if (cloudModeActive()) {
+    if (state.micBusy) return; // "Thinking…" — ignore taps until the request settles
+    $("feedback-wrong").classList.add("hidden");
+    clearTimeout(state.autoAdvanceTimer);
+    startCloudListening();
+    return;
+  }
+  if (!speechSupported || state.recognizing) return;
   $("feedback-wrong").classList.add("hidden");
   clearTimeout(state.autoAdvanceTimer);
   startListening();

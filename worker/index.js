@@ -16,6 +16,11 @@
 //                               emoji must be one of KID_EMOJIS or it's ignored
 //   POST /reset-kid      -> { kid } -> clears en/de progress + days, keeps kid + settings
 //   POST /delete-kid     -> { kid } -> removes kid entirely
+//   POST /transcribe?lang=en|de -> body: raw audio bytes (Content-Type: audio/mp4 |
+//                            audio/webm[;codecs=...] | audio/ogg | audio/wav | audio/wave)
+//                            -> forwards to Groq whisper-large-v3 and returns { text }.
+//                            501 if GROQ_API_KEY isn't configured (client falls back to
+//                            Web Speech in that case).
 //
 // Required Worker secrets/variables (set in the Cloudflare dashboard under
 // Settings -> Variables and Secrets):
@@ -26,6 +31,10 @@
 //   APP_KEY        (secret)  any string; must match APP_KEY in app.js — a casual
 //                            deterrent only, not real auth (it's visible in client source)
 //   ALLOWED_ORIGIN (var)     e.g. "https://heee.github.io" (or "*" to allow any origin)
+//   GROQ_API_KEY   (secret)  optional — free key from console.groq.com; enables cloud
+//                            transcription via /transcribe. If absent, /transcribe
+//                            returns 501 and the client automatically falls back to the
+//                            in-browser Web Speech API.
 
 const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "prek" } };
 const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
@@ -166,6 +175,51 @@ export default {
       }
     }
 
+    if (url.pathname === "/transcribe" && request.method === "POST") {
+      if (!checkKey(request, env)) return json({ error: "unauthorized" }, 401, cors);
+      if (!env.GROQ_API_KEY) return json({ error: "transcription not configured" }, 501, cors);
+
+      const lang = url.searchParams.get("lang");
+      if (lang !== "en" && lang !== "de") return json({ error: "invalid lang" }, 400, cors);
+
+      const contentType = request.headers.get("Content-Type") || "";
+      const filename = filenameForContentType(contentType);
+      if (!filename) return json({ error: "unsupported content type" }, 400, cors);
+
+      let bytes;
+      try {
+        bytes = await request.arrayBuffer();
+      } catch (e) {
+        return json({ error: "invalid body" }, 400, cors);
+      }
+      if (bytes.byteLength < 200 || bytes.byteLength > 1_500_000) {
+        return json({ error: "invalid audio size" }, 400, cors);
+      }
+
+      try {
+        const form = new FormData();
+        form.append("file", new File([bytes], filename, { type: contentType }));
+        form.append("model", "whisper-large-v3");
+        form.append("language", lang);
+        form.append("temperature", "0");
+        form.append("response_format", "json");
+
+        const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${env.GROQ_API_KEY}` },
+          body: form,
+        });
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          return json({ error: `transcription failed (${res.status})${text ? `: ${text.slice(0, 200)}` : ""}` }, 502, cors);
+        }
+        const result = await res.json();
+        return json({ text: result?.text || "" }, 200, cors);
+      } catch (e) {
+        return json({ error: `transcription failed: ${e.message}` }, 502, cors);
+      }
+    }
+
     if (url.pathname === "/delete-kid" && request.method === "POST") {
       if (!checkKey(request, env)) return json({ error: "unauthorized" }, 401, cors);
       let body;
@@ -213,6 +267,22 @@ function json(obj, status, cors) {
 function clamp(n, min, max, fallback) {
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
+}
+
+// Maps a request Content-Type to a filename for the Groq multipart upload —
+// Groq/Whisper picks its decoder based on the file extension, not the
+// Content-Type header, so this mapping has to be exact. Returns null for
+// anything unrecognized (caller responds 400).
+function filenameForContentType(contentType) {
+  const base = contentType.split(";")[0].trim().toLowerCase();
+  switch (base) {
+    case "audio/mp4": return "clip.mp4";
+    case "audio/webm": return "clip.webm";
+    case "audio/ogg": return "clip.ogg";
+    case "audio/wav":
+    case "audio/wave": return "clip.wav";
+    default: return null;
+  }
 }
 
 function validKidName(name) {

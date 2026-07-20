@@ -76,6 +76,11 @@ Cloudflare account and a few minutes, no CLI required.
    - `GITHUB_TOKEN` (**secret**) — the fine-grained token from step 2
    - `APP_KEY` (**secret**) — make up any random string; you'll paste this
      same string into `app.js` in the next step
+   - `GROQ_API_KEY` (**secret**, optional) — enables cloud speech
+     transcription (see "Speech recognition" below). Create a free key at
+     <https://console.groq.com> (API Keys section) and paste it here. If you
+     skip this, the app automatically falls back to the in-browser Web
+     Speech API.
 5. Note the Worker's URL, shown at the top of its overview page — it looks
    like `https://sightwords-training-worker.<your-subdomain>.workers.dev`.
 6. Open `app.js` in this repo and update the two constants near the top:
@@ -183,19 +188,36 @@ appear in their own collapsed "Below level (assumed known)" group instead of
 "Not yet seen," so it's easy to tell "hasn't gotten there yet" apart from
 "we're skipping this one."
 
-## Speech recognition — notes & limitations on iOS
+## Speech recognition
 
-- Speech recognition (`webkitSpeechRecognition`) works in **Safari**. It is
-  **not guaranteed to work in an installed home-screen PWA** on iOS — if the
-  app reports "Speech isn't available here," open the same URL directly in
-  Safari (not the home-screen icon) to practice.
-- Speech *synthesis* (hearing the correct word) works in both contexts.
+The primary voice-capture path is **cloud transcription**: tapping the mic
+records a short clip (up to 3.5s) and sends it to the Worker's
+`/transcribe` endpoint, which forwards it to Groq's `whisper-large-v3` model
+and returns the transcript. This works in **Safari and installed
+home-screen PWAs alike** on iOS (unlike the old in-browser recognizer), and
+needs mic permission on first use each session. Audio clips are sent to Groq
+for transcription only — the app doesn't store them.
+
+The in-browser **Web Speech API** (`webkitSpeechRecognition`) remains as an
+**automatic fallback**, used whenever:
+- the Worker isn't configured (local-only mode, empty `WORKER_URL`), or
+- the `GROQ_API_KEY` secret isn't set on the Worker (`/transcribe` responds
+  501, and the app switches to Web Speech for the rest of that session), or
+- the browser can't record audio at all (no `MediaRecorder`/`getUserMedia`).
+
+If neither path is available, the practice screen shows a "Speech isn't
+available here" banner and disables the mic button.
+
+Other notes:
+- Speech *synthesis* (hearing the correct word) always uses the in-browser
+  API and works regardless of which recognition path is active.
 - Matching is intentionally generous for 5-year-olds: exact match, common
   homophones (to/too/two, there/their/they're, etc.) and digit↔word forms
   (one/1) in both languages, umlaut-normalized comparison for German, and a
   small typo/mishearing tolerance (edit distance of 1) for longer words.
-- No speech detected within about 6 seconds is **not** scored wrong — the
-  child just gets asked to try again.
+- No speech detected — silence, a too-quiet clip, or (for cloud
+  transcription) a hallucinated/no-match result — is **not** scored wrong;
+  the child just gets asked to try again.
 
 ## Progress sync
 
