@@ -46,6 +46,7 @@ p { margin: 0; }
 
 html, body {
   height: 100%;
+  overflow-x: hidden;
   overscroll-behavior: none;
 }
 
@@ -293,12 +294,13 @@ button { cursor: pointer; }
   align-items: center;
   gap: 0.5rem;
   min-height: 120px;
+  min-width: 0; /* let the grid track shrink below the name's min-content width */
   transition: transform 0.15s ease;
 }
 .kid-card:active { transform: scale(0.95); }
 .kid-card.selected { outline: 3px solid var(--sage); }
 .kid-card .kid-avatar { font-size: 2.2rem; }
-.kid-card .kid-name { font-weight: 800; text-align: center; word-break: break-word; }
+.kid-card .kid-name { font-weight: 800; text-align: center; overflow-wrap: anywhere; }
 
 .kid-card.new-kid-card {
   background: transparent;
