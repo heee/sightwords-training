@@ -1,18 +1,3 @@
 {
-  "kids": {
-    "__testkid__": {
-      "settings": {
-        "wordsPerSession": 20,
-        "newWordsPerDay": 3
-      },
-      "en": {
-        "words": {},
-        "days": {}
-      },
-      "de": {
-        "words": {},
-        "days": {}
-      }
-    }
-  }
+  "kids": {}
 }
