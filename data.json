@@ -37,6 +37,20 @@
           "2026-07-20": 4
         }
       }
+    },
+    "Natalie": {
+      "settings": {
+        "wordsPerSession": 20,
+        "newWordsPerDay": 3
+      },
+      "en": {
+        "words": {},
+        "days": {}
+      },
+      "de": {
+        "words": {},
+        "days": {}
+      }
     }
   }
 }
