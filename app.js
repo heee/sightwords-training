@@ -28,7 +28,16 @@ const LS = {
   newCount: "swt-new-today",
 };
 
-const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3 };
+const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "k1" } };
+const LEVEL_IDS = { en: LEVELS.en.map((l) => l.id), de: LEVELS.de.map((l) => l.id) };
+
+// Looks up the flat-list start index for a given language + level id —
+// words before this index are "assumed known" and never introduced as new.
+// Falls back to 0 (start of the list) for an unrecognized id.
+function levelStartIndex(lang, levelId) {
+  const found = (LEVELS[lang] || []).find((l) => l.id === levelId);
+  return found ? found.startIndex : 0;
+}
 const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
 
 const state = {
@@ -156,6 +165,13 @@ const T = {
     kidName: "Kid's name",
     wordsPerSession: "Words per session",
     newWordsPerDay: "New words per day",
+    levelLabelEn: "Reading level 🇺🇸",
+    levelLabelDe: "Reading level 🇩🇪",
+    levelEnPrek: "Pre-K / K",
+    levelEnG1: "1st grade",
+    levelEnG23: "2nd/3rd grade",
+    levelDeK1: "Grade 1",
+    levelDeK2: "Grade 2",
     saveSettings: "Save settings",
     settingsSaved: "Settings saved! ✅",
     nameUsedByAnother: "That name is already used by another kid.",
@@ -165,6 +181,7 @@ const T = {
     levelFamiliar: "Familiar",
     levelMastered: "Mastered",
     notYetSeen: "Not yet seen",
+    belowLevel: "Below level (assumed known)",
     noneYet: "None yet.",
     dangerZone: "Danger zone",
     resetHint: "Clears all progress for this kid, in both languages. Can't be undone.",
@@ -220,6 +237,13 @@ const T = {
     kidName: "Name des Kindes",
     wordsPerSession: "Wörter pro Sitzung",
     newWordsPerDay: "Neue Wörter pro Tag",
+    levelLabelEn: "Lesestufe 🇺🇸",
+    levelLabelDe: "Lesestufe 🇩🇪",
+    levelEnPrek: "Vorschule",
+    levelEnG1: "1. Klasse",
+    levelEnG23: "2./3. Klasse",
+    levelDeK1: "Klasse 1",
+    levelDeK2: "Klasse 2",
     saveSettings: "Einstellungen speichern",
     settingsSaved: "Einstellungen gespeichert! ✅",
     nameUsedByAnother: "Dieser Name wird bereits von einem anderen Kind verwendet.",
@@ -229,6 +253,7 @@ const T = {
     levelFamiliar: "Bekannt",
     levelMastered: "Gemeistert",
     notYetSeen: "Noch nicht gesehen",
+    belowLevel: "Unter der Stufe (als bekannt angenommen)",
     noneYet: "Noch keine.",
     dangerZone: "Gefahrenzone",
     resetHint: "Löscht den gesamten Fortschritt dieses Kindes, in beiden Sprachen. Kann nicht rückgängig gemacht werden.",
@@ -286,6 +311,9 @@ function applyStaticTranslations() {
   $("label-kid-name").textContent = t("kidName");
   $("label-words-per-session").textContent = t("wordsPerSession");
   $("label-new-words-per-day").textContent = t("newWordsPerDay");
+  $("label-level-en").textContent = t("levelLabelEn");
+  $("label-level-de").textContent = t("levelLabelDe");
+  renderLevelPickers();
   $("btn-settings-save").textContent = t("saveSettings");
   $("mastery-title-text").textContent = t("wordMastery");
   $("btn-settings-back").setAttribute("aria-label", t("back"));
@@ -308,7 +336,7 @@ function applyStaticTranslations() {
 
 function emptyKidRecord() {
   return {
-    settings: { ...DEFAULT_SETTINGS },
+    settings: { ...DEFAULT_SETTINGS, levels: { ...DEFAULT_SETTINGS.levels } },
     en: { words: {}, days: {} },
     de: { words: {}, days: {} },
   };
@@ -336,9 +364,13 @@ function ensureDataShape() {
   for (const name of Object.keys(data.kids)) {
     const kid = data.kids[name];
     if (!kid || typeof kid !== "object") { data.kids[name] = emptyKidRecord(); continue; }
-    if (!kid.settings || typeof kid.settings !== "object") kid.settings = { ...DEFAULT_SETTINGS };
+    if (!kid.settings || typeof kid.settings !== "object") kid.settings = { ...DEFAULT_SETTINGS, levels: { ...DEFAULT_SETTINGS.levels } };
     if (!Number.isFinite(kid.settings.wordsPerSession)) kid.settings.wordsPerSession = DEFAULT_SETTINGS.wordsPerSession;
     if (!Number.isFinite(kid.settings.newWordsPerDay)) kid.settings.newWordsPerDay = DEFAULT_SETTINGS.newWordsPerDay;
+    if (!kid.settings.levels || typeof kid.settings.levels !== "object") kid.settings.levels = { ...DEFAULT_SETTINGS.levels };
+    for (const lang of ["en", "de"]) {
+      if (!LEVEL_IDS[lang].includes(kid.settings.levels[lang])) kid.settings.levels[lang] = LEVEL_IDS[lang][0];
+    }
     for (const lang of ["en", "de"]) {
       if (!kid[lang] || typeof kid[lang] !== "object") kid[lang] = { words: {}, days: {} };
       if (!kid[lang].words || typeof kid[lang].words !== "object") kid[lang].words = {};
@@ -507,9 +539,13 @@ function applyAnswer(entry, correct, today) {
 }
 
 // Builds one practice queue: due reviews first (lowest level, then oldest
-// lastSeen), then brand-new words in list order (capped by the daily new-
-// word budget), then top-up with soonest-due already-seen words.
-function buildSession(langData, wordList, settings, today, alreadyIntroducedToday) {
+// lastSeen), then brand-new words in list order STARTING AT startIndex
+// (words before it are "assumed known" for this kid's level and never
+// introduced — capped by the daily new-word budget), then top-up with
+// soonest-due already-seen words. Reviews and top-up are unaffected by
+// startIndex — any word with stored progress keeps working regardless of
+// the kid's current level.
+function buildSession(langData, wordList, settings, today, alreadyIntroducedToday, startIndex = 0) {
   const words = langData.words || {};
   const wordsPerSession = settings.wordsPerSession;
   const newBudget = Math.max(0, settings.newWordsPerDay - alreadyIntroducedToday);
@@ -531,7 +567,8 @@ function buildSession(langData, wordList, settings, today, alreadyIntroducedToda
 
   let newlyIntroducedCount = 0;
   if (queue.length < wordsPerSession) {
-    for (const w of wordList) {
+    for (let i = startIndex; i < wordList.length; i++) {
+      const w = wordList[i];
       if (queue.length >= wordsPerSession || newlyIntroducedCount >= newBudget) break;
       if (words[w] || used.has(w)) continue;
       queue.push(w);
@@ -561,7 +598,9 @@ function startSession(kid, lang) {
   const langData = kidRecord[lang];
   const today = todayStr();
   const alreadyIntroduced = getNewIntroducedToday(kid, lang, today);
-  const { queue, newlyIntroducedCount } = buildSession(langData, WORDS[lang], kidRecord.settings, today, alreadyIntroduced);
+  const levelId = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || LEVEL_IDS[lang][0];
+  const startIndex = levelStartIndex(lang, levelId);
+  const { queue, newlyIntroducedCount } = buildSession(langData, WORDS[lang], kidRecord.settings, today, alreadyIntroduced, startIndex);
   if (newlyIntroducedCount > 0) addNewIntroducedToday(kid, lang, today, newlyIntroducedCount);
 
   state.session = {
@@ -1139,6 +1178,43 @@ $("emoji-picker").addEventListener("click", (e) => {
   $("emoji-picker").querySelectorAll(".emoji-btn").forEach((b) => b.classList.toggle("selected", b === btn));
 });
 
+// Reading-level picker labels per (language, level id) — a small lookup into
+// the T dictionary so renderLevelPicker can localize each button's text.
+const LEVEL_LABEL_KEYS = {
+  en: { prek: "levelEnPrek", g1: "levelEnG1", g23: "levelEnG23" },
+  de: { k1: "levelDeK1", k2: "levelDeK2" },
+};
+
+function renderLevelPicker(pickerId, lang, selectedId) {
+  const el = $(pickerId);
+  el.innerHTML = LEVEL_IDS[lang].map((id) => `
+    <button type="button" class="level-btn${id === selectedId ? " selected" : ""}" data-level="${id}">${escapeHtml(t(LEVEL_LABEL_KEYS[lang][id]))}</button>
+  `).join("");
+}
+
+// Re-renders both level pickers with localized labels. Called with explicit
+// selections from renderSettings(); called with no args from
+// applyStaticTranslations() on a bare language switch, in which case it
+// preserves whatever was already selected in the DOM (falling back to the
+// first level id if nothing was selected yet).
+function renderLevelPickers(selectedEn, selectedDe) {
+  const curEn = selectedEn || $("level-picker-en").querySelector(".level-btn.selected")?.dataset.level || LEVEL_IDS.en[0];
+  const curDe = selectedDe || $("level-picker-de").querySelector(".level-btn.selected")?.dataset.level || LEVEL_IDS.de[0];
+  renderLevelPicker("level-picker-en", "en", curEn);
+  renderLevelPicker("level-picker-de", "de", curDe);
+}
+
+$("level-picker-en").addEventListener("click", (e) => {
+  const btn = e.target.closest(".level-btn");
+  if (!btn) return;
+  $("level-picker-en").querySelectorAll(".level-btn").forEach((b) => b.classList.toggle("selected", b === btn));
+});
+$("level-picker-de").addEventListener("click", (e) => {
+  const btn = e.target.closest(".level-btn");
+  if (!btn) return;
+  $("level-picker-de").querySelectorAll(".level-btn").forEach((b) => b.classList.toggle("selected", b === btn));
+});
+
 function renderSettings() {
   const kid = state.currentKid;
   const data = getData();
@@ -1149,6 +1225,7 @@ function renderSettings() {
   $("settings-words-per-session").value = kidRecord.settings.wordsPerSession;
   $("settings-new-words-per-day").value = kidRecord.settings.newWordsPerDay;
   renderEmojiPicker(kidEmojiFor(kidRecord, kid));
+  renderLevelPickers(kidRecord.settings.levels.en, kidRecord.settings.levels.de);
 
   $("confirm-reset").classList.add("hidden");
   $("confirm-delete-kid").classList.add("hidden");
@@ -1160,14 +1237,27 @@ function renderMastery() {
   const kid = state.currentKid;
   const lang = state.lang;
   const data = getData();
-  const langData = data.kids[kid][lang];
+  const kidRecord = data.kids[kid];
+  const langData = kidRecord[lang];
   const wordList = WORDS[lang];
   const words = langData.words;
+
+  const levelId = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || LEVEL_IDS[lang][0];
+  const startIndex = levelStartIndex(lang, levelId);
 
   const levels = { 0: [], 1: [], 2: [], 3: [] };
   const seen = new Set(Object.keys(words));
   for (const w of Object.keys(words)) levels[words[w].level].push(w);
-  const notSeen = wordList.filter((w) => !seen.has(w));
+  // Unseen words split by the kid's level start index: words at/after it are
+  // genuinely "not yet seen"; words before it are treated as already known
+  // for this kid's level and only shown in a separate collapsed group.
+  const notSeen = [];
+  const belowLevel = [];
+  wordList.forEach((w, i) => {
+    if (seen.has(w)) return;
+    if (i < startIndex) belowLevel.push(w);
+    else notSeen.push(w);
+  });
 
   $("mastery-lang-label").textContent = lang === "de" ? "(Deutsch)" : "(English)";
 
@@ -1191,6 +1281,7 @@ function renderMastery() {
     { label: t("levelMastered"), words: levels[3] },
     { label: t("notYetSeen"), words: notSeen },
   ];
+  if (belowLevel.length > 0) groups.push({ label: t("belowLevel"), words: belowLevel });
   $("mastery-lists").innerHTML = groups.map((g) => `
     <details class="mastery-level-group">
       <summary>${escapeHtml(g.label)} (${g.words.length})</summary>
@@ -1207,7 +1298,9 @@ $("btn-settings-save").addEventListener("click", async () => {
   const newName = requestedName || oldName;
   const wordsPerSession = clampNum(parseInt($("settings-words-per-session").value, 10), 5, 50, DEFAULT_SETTINGS.wordsPerSession);
   const newWordsPerDay = clampNum(parseInt($("settings-new-words-per-day").value, 10), 0, 10, DEFAULT_SETTINGS.newWordsPerDay);
-  const settings = { wordsPerSession, newWordsPerDay };
+  const levelEn = $("level-picker-en").querySelector(".level-btn.selected")?.dataset.level || DEFAULT_SETTINGS.levels.en;
+  const levelDe = $("level-picker-de").querySelector(".level-btn.selected")?.dataset.level || DEFAULT_SETTINGS.levels.de;
+  const settings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe } };
   const emoji = $("emoji-picker").querySelector(".emoji-btn.selected")?.dataset.emoji || "";
 
   const data = getData();

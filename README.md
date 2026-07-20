@@ -120,7 +120,7 @@ If you update the code later, pushing to GitHub Pages updates the live site
 immediately — the installed home screen icon just reopens that same URL.
 Devices that already have it installed may still see the old cached version
 for a bit because of the service worker — bump `CACHE_NAME` in `sw.js` (e.g.
-`swt-shell-v2`) whenever you ship a meaningful change, so installed copies
+`swt-shell-v3`) whenever you ship a meaningful change, so installed copies
 pick up the update promptly instead of serving stale files indefinitely.
 
 ---
@@ -164,6 +164,23 @@ words in Dolch/Grundwortschatz order, capped by "new words per day" (shared
 across every session that day, so playing twice in one day won't blow past
 the new-word cap); then, if there's still room, a top-up of already-seen
 words ordered by whichever is due soonest.
+
+## Reading levels
+
+Each kid also has a **reading level per language**, set in Settings > General
+("Reading level 🇺🇸" / "Reading level 🇩🇪"): Pre-K/K, 1st grade, or 2nd/3rd
+grade for English; Grade 1 or Grade 2 for German. The level picks an entry
+point into that language's word list (`LEVELS` in `words.js`) — any word
+*before* that point is treated as **"assumed known"** and is never
+introduced as a brand-new word for that kid.
+
+This only affects *new*-word introduction. Reviews of words the kid has
+already practiced keep working exactly as before no matter where the level
+is set (e.g. raising the level later doesn't hide progress made below it).
+In Settings > Word mastery, unseen words below the current level start
+appear in their own collapsed "Below level (assumed known)" group instead of
+"Not yet seen," so it's easy to tell "hasn't gotten there yet" apart from
+"we're skipping this one."
 
 ## Speech recognition — notes & limitations on iOS
 

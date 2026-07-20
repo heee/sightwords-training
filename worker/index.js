@@ -9,8 +9,10 @@
 //                            -> merges: overwrites the given word entries, and
 //                               days[day] = max(existing, dayCount). Creates the kid if missing.
 //   POST /register-kid   -> { kid } -> creates an empty kid record with default settings if absent
-//   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay }, rename?, emoji? }
-//                            -> clamps ranges (5-50, 0-10); rename moves the whole kid record;
+//   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay,
+//                              levels: { en: "prek"|"g1"|"g23", de: "k1"|"k2" } }, rename?, emoji? }
+//                            -> clamps ranges (5-50, 0-10); invalid/missing levels fall back to
+//                               defaults ("prek"/"k1"); rename moves the whole kid record;
 //                               emoji must be one of KID_EMOJIS or it's ignored
 //   POST /reset-kid      -> { kid } -> clears en/de progress + days, keeps kid + settings
 //   POST /delete-kid     -> { kid } -> removes kid entirely
@@ -25,16 +27,17 @@
 //                            deterrent only, not real auth (it's visible in client source)
 //   ALLOWED_ORIGIN (var)     e.g. "https://heee.github.io" (or "*" to allow any origin)
 
-const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3 };
+const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "k1" } };
 const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
 const MAX_WORDS_PER_SESSION = 50;
 const MIN_WORDS_PER_SESSION = 5;
 const MAX_NEW_WORDS_PER_DAY = 10;
 const MIN_NEW_WORDS_PER_DAY = 0;
+const VALID_LEVELS = { en: ["prek", "g1", "g23"], de: ["k1", "k2"] };
 
 function emptyKid() {
   return {
-    settings: { ...DEFAULT_SETTINGS },
+    settings: { ...DEFAULT_SETTINGS, levels: { ...DEFAULT_SETTINGS.levels } },
     en: { words: {}, days: {} },
     de: { words: {}, days: {} },
   };
@@ -120,12 +123,14 @@ export default {
       const rename = typeof body?.rename === "string" ? body.rename.trim().slice(0, 40) : "";
       const wordsPerSession = clamp(Math.floor(Number(body?.settings?.wordsPerSession)), MIN_WORDS_PER_SESSION, MAX_WORDS_PER_SESSION, DEFAULT_SETTINGS.wordsPerSession);
       const newWordsPerDay = clamp(Math.floor(Number(body?.settings?.newWordsPerDay)), MIN_NEW_WORDS_PER_DAY, MAX_NEW_WORDS_PER_DAY, DEFAULT_SETTINGS.newWordsPerDay);
+      const levelEn = VALID_LEVELS.en.includes(body?.settings?.levels?.en) ? body.settings.levels.en : DEFAULT_SETTINGS.levels.en;
+      const levelDe = VALID_LEVELS.de.includes(body?.settings?.levels?.de) ? body.settings.levels.de : DEFAULT_SETTINGS.levels.de;
       const emoji = KID_EMOJIS.includes(body?.emoji) ? body.emoji : "";
 
       try {
         await commitMutation(env, (data) => {
           if (!data.kids[kid]) data.kids[kid] = emptyKid();
-          data.kids[kid].settings = { wordsPerSession, newWordsPerDay };
+          data.kids[kid].settings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe } };
           if (emoji) data.kids[kid].emoji = emoji;
           if (rename && rename !== kid) {
             data.kids[rename] = data.kids[kid];
