@@ -89,29 +89,29 @@
       "de": {
         "words": {
           "der": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-21"
+            "nextDue": "2026-07-23"
           },
           "die": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-21"
+            "nextDue": "2026-07-23"
           },
           "das": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 1,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-21"
+            "nextDue": "2026-07-23"
           }
         },
         "days": {
-          "2026-07-20": 4
+          "2026-07-20": 7
         }
       },
       "emoji": "🐨"
