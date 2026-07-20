@@ -30,10 +30,10 @@
     <div class="picker-body">
       <div class="picker-hero">🦊</div>
       <h1 class="screen-title">Sight Words</h1>
-      <p class="screen-sub">Pick your reader, or add someone new!</p>
+      <p id="picker-sub" class="screen-sub">Pick your reader, or add someone new!</p>
 
       <div id="picker-lang-toggle" class="lang-toggle" role="tablist">
-        <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇬🇧 English</button>
+        <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇺🇸 English</button>
         <button type="button" class="lang-btn" data-lang="de" aria-label="Deutsch">🇩🇪 Deutsch</button>
       </div>
 
@@ -43,7 +43,7 @@
         <input id="new-kid-input" class="text-input" type="text" placeholder="Kid's name" maxlength="40" autocomplete="off" required>
         <div class="new-kid-actions">
           <button type="button" id="btn-new-kid-cancel" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn btn-primary">Let's go!</button>
+          <button type="submit" id="btn-new-kid-submit" class="btn btn-primary">Let's go!</button>
         </div>
       </form>
     </div>
@@ -54,7 +54,7 @@
     <div class="home-topbar">
       <button id="btn-switch-kid" type="button" class="icon-btn" aria-label="Switch kid" title="Switch kid">👥</button>
       <div id="home-lang-toggle" class="lang-toggle lang-toggle-compact" role="tablist">
-        <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇬🇧</button>
+        <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇺🇸</button>
         <button type="button" class="lang-btn" data-lang="de" aria-label="Deutsch">🇩🇪</button>
       </div>
       <button id="btn-open-settings" type="button" class="icon-btn" aria-label="Settings" title="Settings">⚙️</button>
@@ -126,7 +126,7 @@
     <div id="summary-confetti" class="confetti" aria-hidden="true"></div>
     <div class="summary-body">
       <div class="summary-emoji">🎉</div>
-      <h1 class="screen-title">Session complete!</h1>
+      <h1 id="summary-title" class="screen-title">Session complete!</h1>
       <div id="summary-stars" class="summary-stars"></div>
       <div id="summary-count" class="summary-count">0 / 0 correct</div>
       <div id="summary-practiced" class="card-sub-text"></div>
@@ -138,37 +138,46 @@
   <section id="screen-settings" class="screen">
     <div class="settings-topbar">
       <button id="btn-settings-back" type="button" class="icon-btn" aria-label="Back" title="Back">←</button>
-      <h1 class="screen-title settings-title">Settings</h1>
+      <h1 id="settings-heading" class="screen-title settings-title">Settings</h1>
     </div>
 
     <div class="settings-block">
-      <h2 class="section-title">General</h2>
-      <label class="field-label">Kid's name</label>
+      <h2 id="appearance-heading" class="section-title">Appearance</h2>
+      <label id="label-theme" class="field-label">Theme</label>
+      <div id="theme-toggle" class="lang-toggle" role="tablist">
+        <button type="button" id="theme-btn-light" class="lang-btn theme-btn active" data-theme="light">☀️ Light</button>
+        <button type="button" id="theme-btn-dark" class="lang-btn theme-btn" data-theme="dark">🌙 Dark</button>
+      </div>
+    </div>
+
+    <div class="settings-block">
+      <h2 id="general-heading" class="section-title">General</h2>
+      <label id="label-kid-name" class="field-label">Kid's name</label>
       <input id="settings-kid-name" class="text-input" type="text" maxlength="40">
 
-      <label class="field-label">Words per session</label>
+      <label id="label-words-per-session" class="field-label">Words per session</label>
       <input id="settings-words-per-session" class="text-input" type="number" min="5" max="50" inputmode="numeric">
 
-      <label class="field-label">New words per day</label>
+      <label id="label-new-words-per-day" class="field-label">New words per day</label>
       <input id="settings-new-words-per-day" class="text-input" type="number" min="0" max="10" inputmode="numeric">
 
       <button id="btn-settings-save" type="button" class="btn btn-primary btn-large">Save settings</button>
     </div>
 
     <div class="settings-block">
-      <h2 class="section-title">Word mastery <span id="mastery-lang-label" class="section-title-sub"></span></h2>
+      <h2 class="section-title"><span id="mastery-title-text">Word mastery</span> <span id="mastery-lang-label" class="section-title-sub"></span></h2>
       <div id="mastery-chips" class="mastery-chips"></div>
       <div id="mastery-lists" class="mastery-lists"></div>
     </div>
 
     <div class="settings-block settings-danger">
-      <h2 class="section-title">Danger zone</h2>
+      <h2 id="danger-zone-heading" class="section-title">Danger zone</h2>
 
       <div class="danger-row">
-        <p class="settings-hint">Clears all progress for this kid, in both languages. Can't be undone.</p>
+        <p id="reset-hint" class="settings-hint">Clears all progress for this kid, in both languages. Can't be undone.</p>
         <button id="btn-reset-progress" type="button" class="btn btn-danger">Reset all progress</button>
         <div id="confirm-reset" class="confirm-box hidden">
-          <p>Really reset everything for this kid?</p>
+          <p id="reset-confirm-text">Really reset everything for this kid?</p>
           <div class="confirm-actions">
             <button id="btn-reset-cancel" type="button" class="btn btn-secondary">Cancel</button>
             <button id="btn-reset-confirm" type="button" class="btn btn-danger">Yes, delete everything</button>
@@ -177,10 +186,10 @@
       </div>
 
       <div class="danger-row">
-        <p class="settings-hint">Removes this kid entirely, from every device. Can't be undone.</p>
+        <p id="delete-hint" class="settings-hint">Removes this kid entirely, from every device. Can't be undone.</p>
         <button id="btn-delete-kid" type="button" class="btn btn-danger">Delete kid</button>
         <div id="confirm-delete-kid" class="confirm-box hidden">
-          <p>Really delete this kid completely?</p>
+          <p id="delete-confirm-text">Really delete this kid completely?</p>
           <div class="confirm-actions">
             <button id="btn-delete-kid-cancel" type="button" class="btn btn-secondary">Cancel</button>
             <button id="btn-delete-kid-confirm" type="button" class="btn btn-danger">Yes, delete everything</button>

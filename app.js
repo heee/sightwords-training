@@ -21,6 +21,7 @@ const APP_KEY = "ew6hl1snory5udxf7zvbkj4g98cm";
 
 const LS = {
   lang: "swt-lang",
+  theme: "swt-theme",
   lastKid: "swt-last-kid",
   cacheData: "swt-cache-data",
   pendingQueue: "swt-pending-queue",
@@ -32,12 +33,24 @@ const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "�
 
 const state = {
   lang: localStorage.getItem(LS.lang) || "en",
+  theme: localStorage.getItem(LS.theme) || "light",
   currentKid: localStorage.getItem(LS.lastKid) || "",
   screen: "screen-picker",
   session: null,
   recognizing: false,
   autoAdvanceTimer: null,
 };
+
+// Theme is a user choice (Settings > Appearance), not derived from the
+// device's system setting — defaults to light on first launch regardless
+// of OS dark mode, so it looks the same on every device until changed.
+function applyTheme(theme) {
+  state.theme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem(LS.theme, theme);
+  document.querySelectorAll(".theme-btn").forEach((b) => b.classList.toggle("active", b.dataset.theme === theme));
+}
+applyTheme(state.theme);
 
 // ------------------- small helpers -------------------
 
@@ -89,6 +102,199 @@ function addDays(dateStr, days) {
   const dt = new Date(y, m - 1, d);
   dt.setDate(dt.getDate() + days);
   return todayStr(dt);
+}
+
+// ------------------- UI translations (interface chrome, not word content) -------------------
+// Keyed by UI language (state.lang), independent of which word list (en/de)
+// is being practiced — a kid could practice German words with English UI
+// chrome, or vice versa; this dictionary only covers the surrounding app text.
+
+const T = {
+  en: {
+    pickerSub: "Pick your reader, or add someone new!",
+    newKid: "New kid",
+    kidNamePlaceholder: "Kid's name",
+    cancel: "Cancel",
+    letsGo: "Let's go!",
+    nameTaken: "That name is already taken.",
+    switchKid: "Switch kid",
+    settings: "Settings",
+    greeting: (kid, emoji) => `Hi, ${kid}! ${emoji}`,
+    streak: (n) => `${n} day${n === 1 ? "" : "s"} streak`,
+    letsStart: "Let's get started!",
+    goalReached: "Goal reached! 🎉",
+    toGo: (n) => `${n} to go!`,
+    statsText: (seen, mastered) => `${seen} words seen · ${mastered} mastered`,
+    startPractice: "Start practice ▶",
+    speechUnsupported: "Speech isn't available here — open this page in Safari.",
+    whatWord: "What word is this?",
+    tapToListen: "Tap to listen",
+    listening: "Listening…",
+    correctCheer: "Yes! 🎉",
+    notQuite: "Not quite!",
+    noSpeechHeard: "I didn't hear you — try again!",
+    hearWord: "🔊 Hear the word",
+    next: "Next ▸",
+    skip: "Skip ▸",
+    endSession: "End session",
+    back: "Back",
+    sessionComplete: "Session complete!",
+    correctCount: (c, p) => `${c} / ${p} correct`,
+    practicedCount: (n) => `You practiced ${n} word${n === 1 ? "" : "s"} this session.`,
+    backHome: "Back home",
+    settingsTitle: "Settings",
+    appearance: "Appearance",
+    theme: "Theme",
+    themeLight: "☀️ Light",
+    themeDark: "🌙 Dark",
+    general: "General",
+    kidName: "Kid's name",
+    wordsPerSession: "Words per session",
+    newWordsPerDay: "New words per day",
+    saveSettings: "Save settings",
+    settingsSaved: "Settings saved! ✅",
+    nameUsedByAnother: "That name is already used by another kid.",
+    wordMastery: "Word mastery",
+    levelNew: "New",
+    levelLearning: "Learning",
+    levelFamiliar: "Familiar",
+    levelMastered: "Mastered",
+    notYetSeen: "Not yet seen",
+    noneYet: "None yet.",
+    dangerZone: "Danger zone",
+    resetHint: "Clears all progress for this kid, in both languages. Can't be undone.",
+    resetBtn: "Reset all progress",
+    resetConfirmQ: "Really reset everything for this kid?",
+    yesDeleteEverything: "Yes, delete everything",
+    resetDone: "Progress reset.",
+    deleteHint: "Removes this kid entirely, from every device. Can't be undone.",
+    deleteBtn: "Delete kid",
+    deleteConfirmQ: "Really delete this kid completely?",
+    kidDeleted: "Kid deleted.",
+    noWordsAvailable: "No words available right now — try adjusting Settings.",
+  },
+  de: {
+    pickerSub: "Wähl deinen Leser aus oder füge jemand Neues hinzu!",
+    newKid: "Neues Kind",
+    kidNamePlaceholder: "Name des Kindes",
+    cancel: "Abbrechen",
+    letsGo: "Los geht's!",
+    nameTaken: "Dieser Name ist schon vergeben.",
+    switchKid: "Kind wechseln",
+    settings: "Einstellungen",
+    greeting: (kid, emoji) => `Hallo, ${kid}! ${emoji}`,
+    streak: (n) => `${n} Tag${n === 1 ? "" : "e"} Serie`,
+    letsStart: "Los geht's!",
+    goalReached: "Ziel erreicht! 🎉",
+    toGo: (n) => `Noch ${n}!`,
+    statsText: (seen, mastered) => `${seen} Wörter gesehen · ${mastered} gemeistert`,
+    startPractice: "Übung starten ▶",
+    speechUnsupported: "Spracherkennung ist hier nicht verfügbar — öffne diese Seite in Safari.",
+    whatWord: "Welches Wort ist das?",
+    tapToListen: "Zum Zuhören tippen",
+    listening: "Ich höre…",
+    correctCheer: "Richtig! 🎉",
+    notQuite: "Nicht ganz!",
+    noSpeechHeard: "Ich habe dich nicht gehört — versuch's nochmal!",
+    hearWord: "🔊 Wort anhören",
+    next: "Weiter ▸",
+    skip: "Überspringen ▸",
+    endSession: "Sitzung beenden",
+    back: "Zurück",
+    sessionComplete: "Sitzung abgeschlossen!",
+    correctCount: (c, p) => `${c} / ${p} richtig`,
+    practicedCount: (n) => `Du hast in dieser Sitzung ${n} ${n === 1 ? "Wort" : "Wörter"} geübt.`,
+    backHome: "Zurück",
+    settingsTitle: "Einstellungen",
+    appearance: "Darstellung",
+    theme: "Design",
+    themeLight: "☀️ Hell",
+    themeDark: "🌙 Dunkel",
+    general: "Allgemein",
+    kidName: "Name des Kindes",
+    wordsPerSession: "Wörter pro Sitzung",
+    newWordsPerDay: "Neue Wörter pro Tag",
+    saveSettings: "Einstellungen speichern",
+    settingsSaved: "Einstellungen gespeichert! ✅",
+    nameUsedByAnother: "Dieser Name wird bereits von einem anderen Kind verwendet.",
+    wordMastery: "Wortbeherrschung",
+    levelNew: "Neu",
+    levelLearning: "Lernend",
+    levelFamiliar: "Bekannt",
+    levelMastered: "Gemeistert",
+    notYetSeen: "Noch nicht gesehen",
+    noneYet: "Noch keine.",
+    dangerZone: "Gefahrenzone",
+    resetHint: "Löscht den gesamten Fortschritt dieses Kindes, in beiden Sprachen. Kann nicht rückgängig gemacht werden.",
+    resetBtn: "Gesamten Fortschritt zurücksetzen",
+    resetConfirmQ: "Wirklich alles für dieses Kind zurücksetzen?",
+    yesDeleteEverything: "Ja, alles löschen",
+    resetDone: "Fortschritt zurückgesetzt.",
+    deleteHint: "Entfernt dieses Kind vollständig, von jedem Gerät. Kann nicht rückgängig gemacht werden.",
+    deleteBtn: "Kind löschen",
+    deleteConfirmQ: "Dieses Kind wirklich vollständig löschen?",
+    kidDeleted: "Kind gelöscht.",
+    noWordsAvailable: "Gerade keine Wörter verfügbar — versuch die Einstellungen anzupassen.",
+  },
+};
+
+function t(key, ...args) {
+  const entry = T[state.lang][key];
+  return typeof entry === "function" ? entry(...args) : entry;
+}
+
+// Updates every static (non-per-render) piece of UI chrome to the current
+// UI language. Cheap to run on every language change since it only touches
+// textContent/attributes, not app state.
+function applyStaticTranslations() {
+  document.documentElement.lang = state.lang;
+
+  $("picker-sub").textContent = t("pickerSub");
+  $("new-kid-input").placeholder = t("kidNamePlaceholder");
+  $("btn-new-kid-cancel").textContent = t("cancel");
+  $("btn-new-kid-submit").textContent = t("letsGo");
+
+  $("btn-switch-kid").setAttribute("aria-label", t("switchKid"));
+  $("btn-switch-kid").title = t("switchKid");
+  $("btn-open-settings").setAttribute("aria-label", t("settings"));
+  $("btn-open-settings").title = t("settings");
+  $("btn-start-practice").textContent = t("startPractice");
+
+  $("speech-unsupported-banner").textContent = t("speechUnsupported");
+  $("btn-mic").setAttribute("aria-label", t("tapToListen"));
+  $("btn-hear-word").textContent = t("hearWord");
+  $("btn-next-word").textContent = t("next");
+  $("btn-skip").textContent = t("skip");
+  $("btn-end-session").textContent = t("endSession");
+
+  $("summary-title").textContent = t("sessionComplete");
+  $("btn-summary-home").textContent = t("backHome");
+
+  $("settings-heading").textContent = t("settingsTitle");
+  $("appearance-heading").textContent = t("appearance");
+  $("label-theme").textContent = t("theme");
+  $("theme-btn-light").textContent = t("themeLight");
+  $("theme-btn-dark").textContent = t("themeDark");
+  $("general-heading").textContent = t("general");
+  $("label-kid-name").textContent = t("kidName");
+  $("label-words-per-session").textContent = t("wordsPerSession");
+  $("label-new-words-per-day").textContent = t("newWordsPerDay");
+  $("btn-settings-save").textContent = t("saveSettings");
+  $("mastery-title-text").textContent = t("wordMastery");
+  $("btn-settings-back").setAttribute("aria-label", t("back"));
+  $("btn-settings-back").title = t("back");
+
+  $("danger-zone-heading").textContent = t("dangerZone");
+  $("reset-hint").textContent = t("resetHint");
+  $("btn-reset-progress").textContent = t("resetBtn");
+  $("reset-confirm-text").textContent = t("resetConfirmQ");
+  $("btn-reset-cancel").textContent = t("cancel");
+  $("btn-reset-confirm").textContent = t("yesDeleteEverything");
+  $("delete-hint").textContent = t("deleteHint");
+  $("btn-delete-kid").textContent = t("deleteBtn");
+  $("delete-confirm-text").textContent = t("deleteConfirmQ");
+  $("btn-delete-kid-cancel").textContent = t("cancel");
+  $("btn-delete-kid-confirm").textContent = t("yesDeleteEverything");
 }
 
 // ------------------- data layer (local cache = source of truth) -------------------
@@ -641,12 +847,12 @@ function handleRecognitionResult(alternatives) {
 }
 
 function handleNoSpeech() {
-  $("mic-status").textContent = "I didn't hear you — try again!";
+  $("mic-status").textContent = t("noSpeechHeard");
 }
 
 function updateMicUI(listening) {
   $("btn-mic").classList.toggle("listening", listening);
-  if (listening) $("mic-status").textContent = "Listening…";
+  if (listening) $("mic-status").textContent = t("listening");
 }
 
 // ------------------- screens / render -------------------
@@ -669,16 +875,24 @@ function setLang(lang) {
   state.lang = lang;
   localStorage.setItem(LS.lang, lang);
   syncLangToggles();
+  applyStaticTranslations();
+  if (state.screen === "screen-picker") renderPicker();
   if (state.screen === "screen-home") renderHome();
   if (state.screen === "screen-settings") renderSettings();
 }
 
 document.querySelectorAll(".lang-toggle").forEach((toggle) => {
   toggle.addEventListener("click", (e) => {
-    const btn = e.target.closest(".lang-btn");
-    if (!btn) return;
+    const btn = e.target.closest(".lang-btn:not(.theme-btn)");
+    if (!btn || !btn.dataset.lang) return;
     setLang(btn.dataset.lang);
   });
+});
+
+$("theme-toggle").addEventListener("click", (e) => {
+  const btn = e.target.closest(".theme-btn");
+  if (!btn) return;
+  applyTheme(btn.dataset.theme);
 });
 
 // ---- picker screen ----
@@ -700,7 +914,7 @@ function renderPicker() {
   const newBtn = document.createElement("button");
   newBtn.type = "button";
   newBtn.className = "kid-card new-kid-card";
-  newBtn.innerHTML = `<span class="kid-avatar">＋</span><span class="kid-name">New kid</span>`;
+  newBtn.innerHTML = `<span class="kid-avatar">＋</span><span class="kid-name">${escapeHtml(t("newKid"))}</span>`;
   newBtn.addEventListener("click", () => {
     $("new-kid-form").classList.remove("hidden");
     $("new-kid-input").focus();
@@ -722,7 +936,7 @@ $("new-kid-form").addEventListener("submit", (e) => {
   const name = $("new-kid-input").value.trim().slice(0, 40);
   if (!name) return;
   const data = getData();
-  if (data.kids[name]) { toast("That name is already taken."); return; }
+  if (data.kids[name]) { toast(t("nameTaken")); return; }
   createKid(name);
   flushQueue().catch(() => {});
   selectKid(name);
@@ -743,10 +957,10 @@ function renderHome() {
   const langData = kidRecord[lang];
   const today = todayStr();
 
-  $("home-greeting").textContent = `Hi, ${kid}! ${kidEmoji(kid)}`;
+  $("home-greeting").textContent = t("greeting", kid, kidEmoji(kid));
 
   const streak = computeStreak(langData.days, today);
-  $("streak-text").textContent = `${streak} day${streak === 1 ? "" : "s"} streak`;
+  $("streak-text").textContent = t("streak", streak);
 
   const todayCount = langData.days[today] || 0;
   const goal = kidRecord.settings.wordsPerSession;
@@ -755,18 +969,18 @@ function renderHome() {
   $("progress-ring-fill").style.strokeDashoffset = String(circumference * (1 - pct));
   $("progress-ring-label").textContent = `${todayCount}/${goal}`;
   $("progress-encouragement").textContent = todayCount === 0
-    ? "Let's get started!"
-    : (todayCount >= goal ? "Goal reached! 🎉" : `${goal - todayCount} to go!`);
+    ? t("letsStart")
+    : (todayCount >= goal ? t("goalReached") : t("toGo", goal - todayCount));
 
   const wordsSeen = Object.keys(langData.words).length;
   const mastered = Object.values(langData.words).filter((w) => w.level === 3).length;
-  $("stats-text").textContent = `${wordsSeen} words seen · ${mastered} mastered`;
+  $("stats-text").textContent = t("statsText", wordsSeen, mastered);
 }
 
 $("btn-start-practice").addEventListener("click", () => {
   startSession(state.currentKid, state.lang);
   if (!state.session || state.session.queue.length === 0) {
-    toast("No words available right now — try adjusting Settings.");
+    toast(t("noWordsAvailable"));
     state.session = null;
     return;
   }
@@ -784,8 +998,8 @@ function renderPracticeWord() {
   if (!state.session) return;
   const word = currentWord();
   $("practice-word").textContent = word || "";
-  $("practice-prompt").textContent = state.session.lang === "de" ? "Welches Wort ist das?" : "What word is this?";
-  $("mic-status").textContent = speechSupported ? "Tap to listen" : "";
+  $("practice-prompt").textContent = t("whatWord");
+  $("mic-status").textContent = speechSupported ? t("tapToListen") : "";
   $("feedback-wrong").classList.add("hidden");
   clearTimeout(state.autoAdvanceTimer);
   updatePracticeProgress();
@@ -848,7 +1062,7 @@ function handleCorrect() {
   recordAnswer(word, true);
   playChime();
   burstConfetti($("confetti-layer"));
-  $("mic-status").textContent = "Yes! 🎉";
+  $("mic-status").textContent = t("correctCheer");
   setTimeout(() => { advanceSessionAndRender(); }, 1200);
 }
 
@@ -856,7 +1070,7 @@ function handleWrong() {
   const word = currentWord();
   recordAnswer(word, false);
   shakeWord();
-  $("mic-status").textContent = "Not quite!";
+  $("mic-status").textContent = t("notQuite");
   $("feedback-wrong").classList.remove("hidden");
 }
 
@@ -893,8 +1107,8 @@ $("btn-end-session").addEventListener("click", () => {
 function showSummary(s) {
   const stars = s.practicedCount === 0 ? "" : "⭐".repeat(Math.min(5, Math.max(1, Math.round((s.correctCount / s.practicedCount) * 5))));
   $("summary-stars").textContent = stars;
-  $("summary-count").textContent = `${s.correctCount} / ${s.practicedCount} correct`;
-  $("summary-practiced").textContent = `You practiced ${s.practicedCount} word${s.practicedCount === 1 ? "" : "s"} this session.`;
+  $("summary-count").textContent = t("correctCount", s.correctCount, s.practicedCount);
+  $("summary-practiced").textContent = t("practicedCount", s.practicedCount);
   showScreen("screen-summary");
   burstConfetti($("summary-confetti"));
 }
@@ -937,30 +1151,30 @@ function renderMastery() {
   $("mastery-lang-label").textContent = lang === "de" ? "(Deutsch)" : "(English)";
 
   const chipDefs = [
-    { key: 0, cls: "chip-new", label: "New" },
-    { key: 1, cls: "chip-learning", label: "Learning" },
-    { key: 2, cls: "chip-familiar", label: "Familiar" },
-    { key: 3, cls: "chip-mastered", label: "Mastered" },
+    { key: 0, cls: "chip-new", label: t("levelNew") },
+    { key: 1, cls: "chip-learning", label: t("levelLearning") },
+    { key: 2, cls: "chip-familiar", label: t("levelFamiliar") },
+    { key: 3, cls: "chip-mastered", label: t("levelMastered") },
   ];
   $("mastery-chips").innerHTML = chipDefs.map((c) => `
     <div class="mastery-chip ${c.cls}">
       <span class="chip-count">${levels[c.key].length}</span>
-      <span class="chip-label">${c.label}</span>
+      <span class="chip-label">${escapeHtml(c.label)}</span>
     </div>
   `).join("");
 
   const groups = [
-    { label: "New", words: levels[0] },
-    { label: "Learning", words: levels[1] },
-    { label: "Familiar", words: levels[2] },
-    { label: "Mastered", words: levels[3] },
-    { label: "Not yet seen", words: notSeen },
+    { label: t("levelNew"), words: levels[0] },
+    { label: t("levelLearning"), words: levels[1] },
+    { label: t("levelFamiliar"), words: levels[2] },
+    { label: t("levelMastered"), words: levels[3] },
+    { label: t("notYetSeen"), words: notSeen },
   ];
   $("mastery-lists").innerHTML = groups.map((g) => `
     <details class="mastery-level-group">
-      <summary>${g.label} (${g.words.length})</summary>
+      <summary>${escapeHtml(g.label)} (${g.words.length})</summary>
       <div class="mastery-word-chips">
-        ${g.words.map((w) => `<span class="mastery-word-chip">${escapeHtml(w)}</span>`).join("") || '<span class="settings-hint">None yet.</span>'}
+        ${g.words.map((w) => `<span class="mastery-word-chip">${escapeHtml(w)}</span>`).join("") || `<span class="settings-hint">${escapeHtml(t("noneYet"))}</span>`}
       </div>
     </details>
   `).join("");
@@ -977,7 +1191,7 @@ $("btn-settings-save").addEventListener("click", async () => {
   const data = getData();
   const rename = newName !== oldName ? newName : undefined;
   if (rename) {
-    if (data.kids[rename]) { toast("That name is already used by another kid."); return; }
+    if (data.kids[rename]) { toast(t("nameUsedByAnother")); return; }
     data.kids[rename] = data.kids[oldName];
     delete data.kids[oldName];
   }
@@ -993,7 +1207,7 @@ $("btn-settings-save").addEventListener("click", async () => {
   queueOp({ type: "settings", key: `settings:${oldName}`, payload: { kid: oldName, settings, rename } });
   await flushQueue().catch(() => {});
 
-  toast("Settings saved! ✅");
+  toast(t("settingsSaved"));
   renderSettings();
 });
 
@@ -1008,7 +1222,7 @@ $("btn-reset-confirm").addEventListener("click", async () => {
   $("confirm-reset").classList.add("hidden");
   queueOp({ type: "reset-kid", key: `reset-kid:${kid}`, payload: { kid } });
   await flushQueue().catch(() => {});
-  toast("Progress reset.");
+  toast(t("resetDone"));
   renderSettings();
 });
 
@@ -1023,7 +1237,7 @@ $("btn-delete-kid-confirm").addEventListener("click", async () => {
   await flushQueue().catch(() => {});
   state.currentKid = "";
   localStorage.removeItem(LS.lastKid);
-  toast("Kid deleted.");
+  toast(t("kidDeleted"));
   showScreen("screen-picker");
 });
 
@@ -1039,6 +1253,8 @@ async function init() {
   ensureDataShape();
   ensureVoicesLoaded();
   registerServiceWorker();
+  syncLangToggles();
+  applyStaticTranslations();
 
   if (workerConfigured()) {
     await flushQueue().catch(() => {});

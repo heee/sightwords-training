@@ -29,16 +29,16 @@
   --radius-sm: 16px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #23211d;
-    --ink: #F3EEE4;
-    --ink-dim: #ABA294;
-    --card: #2E2B25;
-    --border: #3C382F;
-    --shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
-  }
+/* Theme is app-controlled (Settings > Appearance), not tied to the
+   device's system setting — defaults to light regardless of OS mode. */
+:root[data-theme="dark"] {
+  --bg: #23211d;
+  --ink: #F3EEE4;
+  --ink-dim: #ABA294;
+  --card: #2E2B25;
+  --border: #3C382F;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
 * { box-sizing: border-box; }
