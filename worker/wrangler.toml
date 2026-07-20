@@ -1,0 +1,19 @@
+# Reference config for deploying this Worker via the `wrangler` CLI, if you
+# ever do it from a machine that supports it. Deploying by pasting index.js
+# into the Cloudflare dashboard's Quick Edit works too and needs no CLI —
+# see the README for that path.
+name = "sightwords-training-worker"
+main = "index.js"
+compatibility_date = "2026-01-01"
+
+# Non-secret variables — set these here or in the dashboard under
+# Settings -> Variables and Secrets.
+[vars]
+GH_OWNER = "heee"
+GH_REPO = "sightwords-training"
+GH_BRANCH = "main"
+ALLOWED_ORIGIN = "https://heee.github.io"
+
+# Secrets (GITHUB_TOKEN, APP_KEY) are NOT set here — run:
+#   wrangler secret put GITHUB_TOKEN
+#   wrangler secret put APP_KEY

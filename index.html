@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Sight Words</title>
+<meta name="description" content="Bilingual sight-word reading practice for early readers — English and German.">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FAF6F0">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sight Words">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ SCREEN: KID PICKER ============ -->
+  <section id="screen-picker" class="screen active">
+    <div class="picker-body">
+      <div class="picker-hero">🦊</div>
+      <h1 class="screen-title">Sight Words</h1>
+      <p class="screen-sub">Pick your reader, or add someone new!</p>
+
+      <div id="picker-lang-toggle" class="lang-toggle" role="tablist">
+        <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇬🇧 English</button>
+        <button type="button" class="lang-btn" data-lang="de" aria-label="Deutsch">🇩🇪 Deutsch</button>
+      </div>
+
+      <div id="kid-list" class="kid-list"></div>
+
+      <form id="new-kid-form" class="new-kid-form hidden">
+        <input id="new-kid-input" class="text-input" type="text" placeholder="Kid's name" maxlength="40" autocomplete="off" required>
+        <div class="new-kid-actions">
+          <button type="button" id="btn-new-kid-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Let's go!</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN: HOME ============ -->
+  <section id="screen-home" class="screen">
+    <div class="home-topbar">
+      <button id="btn-switch-kid" type="button" class="icon-btn" aria-label="Switch kid" title="Switch kid">👥</button>
+      <div id="home-lang-toggle" class="lang-toggle lang-toggle-compact" role="tablist">
+        <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇬🇧</button>
+        <button type="button" class="lang-btn" data-lang="de" aria-label="Deutsch">🇩🇪</button>
+      </div>
+      <button id="btn-open-settings" type="button" class="icon-btn" aria-label="Settings" title="Settings">⚙️</button>
+    </div>
+
+    <h1 id="home-greeting" class="screen-title">Hi there! 👋</h1>
+
+    <div class="home-cards">
+      <div class="card card-streak">
+        <div class="card-icon">🔥</div>
+        <div id="streak-text" class="card-big-text">0 day streak</div>
+      </div>
+
+      <div class="card card-progress">
+        <div class="progress-ring-wrap">
+          <svg class="progress-ring" viewBox="0 0 100 100">
+            <circle class="progress-ring-track" cx="50" cy="50" r="42"></circle>
+            <circle id="progress-ring-fill" class="progress-ring-fill" cx="50" cy="50" r="42"></circle>
+          </svg>
+          <div id="progress-ring-label" class="progress-ring-label">0/20</div>
+        </div>
+        <div id="progress-encouragement" class="card-sub-text">Let's get started!</div>
+      </div>
+
+      <div class="card card-stats">
+        <div id="stats-text" class="card-mid-text">0 words seen · 0 mastered</div>
+      </div>
+    </div>
+
+    <button id="btn-start-practice" type="button" class="btn-start">Start practice ▶</button>
+  </section>
+
+  <!-- ============ SCREEN: PRACTICE ============ -->
+  <section id="screen-practice" class="screen">
+    <div class="practice-topbar">
+      <div id="practice-progress-track" class="practice-progress-track">
+        <div id="practice-progress-fill" class="practice-progress-fill"></div>
+      </div>
+      <button id="btn-end-session" type="button" class="btn-end-session">End session</button>
+    </div>
+
+    <div id="speech-unsupported-banner" class="banner hidden">
+      Speech isn't available here — open this page in Safari.
+    </div>
+
+    <div class="practice-center">
+      <div id="confetti-layer" class="confetti" aria-hidden="true"></div>
+      <div id="practice-word" class="practice-word"></div>
+      <p id="practice-prompt" class="practice-prompt">What word is this?</p>
+    </div>
+
+    <div class="practice-mic-area">
+      <button id="btn-mic" type="button" class="mic-btn" aria-label="Tap to listen">
+        <span class="mic-emoji">🎤</span>
+      </button>
+      <p id="mic-status" class="mic-status">Tap to listen</p>
+    </div>
+
+    <div id="feedback-wrong" class="feedback-wrong hidden">
+      <button id="btn-hear-word" type="button" class="btn btn-secondary">🔊 Hear the word</button>
+      <button id="btn-next-word" type="button" class="btn btn-primary">Next ▸</button>
+    </div>
+
+    <button id="btn-skip" type="button" class="btn-skip">Skip ▸</button>
+  </section>
+
+  <!-- ============ SCREEN: SESSION SUMMARY ============ -->
+  <section id="screen-summary" class="screen">
+    <div id="summary-confetti" class="confetti" aria-hidden="true"></div>
+    <div class="summary-body">
+      <div class="summary-emoji">🎉</div>
+      <h1 class="screen-title">Session complete!</h1>
+      <div id="summary-stars" class="summary-stars"></div>
+      <div id="summary-count" class="summary-count">0 / 0 correct</div>
+      <div id="summary-practiced" class="card-sub-text"></div>
+    </div>
+    <button id="btn-summary-home" type="button" class="btn btn-primary btn-large">Back home</button>
+  </section>
+
+  <!-- ============ SCREEN: SETTINGS ============ -->
+  <section id="screen-settings" class="screen">
+    <div class="settings-topbar">
+      <button id="btn-settings-back" type="button" class="icon-btn" aria-label="Back" title="Back">←</button>
+      <h1 class="screen-title settings-title">Settings</h1>
+    </div>
+
+    <div class="settings-block">
+      <h2 class="section-title">General</h2>
+      <label class="field-label">Kid's name</label>
+      <input id="settings-kid-name" class="text-input" type="text" maxlength="40">
+
+      <label class="field-label">Words per session</label>
+      <input id="settings-words-per-session" class="text-input" type="number" min="5" max="50" inputmode="numeric">
+
+      <label class="field-label">New words per day</label>
+      <input id="settings-new-words-per-day" class="text-input" type="number" min="0" max="10" inputmode="numeric">
+
+      <button id="btn-settings-save" type="button" class="btn btn-primary btn-large">Save settings</button>
+    </div>
+
+    <div class="settings-block">
+      <h2 class="section-title">Word mastery <span id="mastery-lang-label" class="section-title-sub"></span></h2>
+      <div id="mastery-chips" class="mastery-chips"></div>
+      <div id="mastery-lists" class="mastery-lists"></div>
+    </div>
+
+    <div class="settings-block settings-danger">
+      <h2 class="section-title">Danger zone</h2>
+
+      <div class="danger-row">
+        <p class="settings-hint">Clears all progress for this kid, in both languages. Can't be undone.</p>
+        <button id="btn-reset-progress" type="button" class="btn btn-danger">Reset all progress</button>
+        <div id="confirm-reset" class="confirm-box hidden">
+          <p>Really reset everything for this kid?</p>
+          <div class="confirm-actions">
+            <button id="btn-reset-cancel" type="button" class="btn btn-secondary">Cancel</button>
+            <button id="btn-reset-confirm" type="button" class="btn btn-danger">Yes, delete everything</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="danger-row">
+        <p class="settings-hint">Removes this kid entirely, from every device. Can't be undone.</p>
+        <button id="btn-delete-kid" type="button" class="btn btn-danger">Delete kid</button>
+        <div id="confirm-delete-kid" class="confirm-box hidden">
+          <p>Really delete this kid completely?</p>
+          <div class="confirm-actions">
+            <button id="btn-delete-kid-cancel" type="button" class="btn btn-secondary">Cancel</button>
+            <button id="btn-delete-kid-confirm" type="button" class="btn btn-danger">Yes, delete everything</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="words.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
