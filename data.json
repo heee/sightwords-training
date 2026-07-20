@@ -2,8 +2,12 @@
   "kids": {
     "Sophia": {
       "settings": {
-        "wordsPerSession": 20,
-        "newWordsPerDay": 3
+        "wordsPerSession": 29,
+        "newWordsPerDay": 3,
+        "levels": {
+          "en": "g1",
+          "de": "prek"
+        }
       },
       "en": {
         "words": {
@@ -74,7 +78,8 @@
         "days": {
           "2026-07-20": 4
         }
-      }
+      },
+      "emoji": "🐨"
     },
     "Natalie": {
       "settings": {
