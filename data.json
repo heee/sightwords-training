@@ -91,48 +91,48 @@
           "der": {
             "level": 0,
             "correct": 1,
-            "wrong": 2,
+            "wrong": 4,
             "lastSeen": "2026-07-20",
             "nextDue": "2026-07-20"
           },
           "die": {
-            "level": 0,
-            "correct": 1,
+            "level": 1,
+            "correct": 2,
             "wrong": 2,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-20"
+            "nextDue": "2026-07-21"
           },
           "das": {
+            "level": 3,
+            "correct": 3,
+            "wrong": 1,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-27"
+          },
+          "und": {
             "level": 2,
             "correct": 2,
-            "wrong": 1,
+            "wrong": 0,
             "lastSeen": "2026-07-20",
             "nextDue": "2026-07-23"
           },
-          "und": {
-            "level": 1,
-            "correct": 1,
-            "wrong": 0,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-21"
-          },
           "ich": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-21"
+            "nextDue": "2026-07-23"
           },
           "du": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-21"
+            "nextDue": "2026-07-23"
           }
         },
         "days": {
-          "2026-07-20": 12
+          "2026-07-20": 19
         }
       },
       "emoji": "🐨"
