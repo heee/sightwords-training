@@ -13,77 +13,112 @@
         "words": {
           "a": {
             "level": 3,
-            "correct": 3,
+            "correct": 4,
             "wrong": 0,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-27"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
           },
           "away": {
             "level": 3,
-            "correct": 3,
+            "correct": 4,
             "wrong": 1,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-27"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
           },
           "and": {
             "level": 3,
-            "correct": 3,
+            "correct": 4,
             "wrong": 0,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-27"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
           },
           "big": {
             "level": 3,
-            "correct": 3,
+            "correct": 4,
             "wrong": 0,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-27"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
           },
           "blue": {
             "level": 1,
-            "correct": 2,
-            "wrong": 1,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-20"
+            "correct": 3,
+            "wrong": 2,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-22",
+            "firstSeen": "2026-07-21"
           },
           "after": {
-            "level": 2,
-            "correct": 3,
+            "level": 3,
+            "correct": 4,
             "wrong": 1,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-23"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
           },
           "again": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-23"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
           },
           "an": {
             "level": 0,
             "correct": 0,
-            "wrong": 6,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-20"
+            "wrong": 8,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-21",
+            "firstSeen": "2026-07-21"
           },
           "always": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-23"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
           },
           "around": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-23"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
+          },
+          "because": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-22",
+            "firstSeen": "2026-07-21"
+          },
+          "been": {
+            "level": 0,
+            "correct": 0,
+            "wrong": 2,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-21",
+            "firstSeen": "2026-07-21"
+          },
+          "before": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-22",
+            "firstSeen": "2026-07-21"
           }
         },
         "days": {
-          "2026-07-20": 32
+          "2026-07-20": 32,
+          "2026-07-21": 16
         }
       },
       "de": {
