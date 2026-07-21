@@ -199,6 +199,12 @@ button { cursor: pointer; }
   background: color-mix(in srgb, var(--sage) 18%, var(--card));
 }
 .lang-btn:active { transform: scale(0.94); }
+.lang-toggle-compact {
+  /* Overrides .lang-toggle's margin-bottom (meant for standalone use) so
+     this embedded topbar instance doesn't get pushed off-center relative
+     to the icon buttons sharing its flex row. */
+  margin-bottom: 0;
+}
 .lang-toggle-compact .lang-btn {
   padding: 0.5rem 0.7rem;
   min-height: 44px;
