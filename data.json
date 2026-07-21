@@ -164,7 +164,7 @@
     },
     "Natalie": {
       "settings": {
-        "wordsPerSession": 10,
+        "wordsPerSession": 15,
         "newWordsPerDay": 3,
         "levels": {
           "en": "prek",
