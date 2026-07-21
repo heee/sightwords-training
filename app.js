@@ -1418,8 +1418,11 @@ function renderWeeklyChart(langData, today) {
   const days = [];
   for (let i = 6; i >= 0; i--) days.push(addDays(today, -i));
 
+  // Scale purely relative to this week's own tallest bar (floor of 1 only
+  // to avoid a 0/0 divide when every day is empty) — no artificial minimum,
+  // so the busiest day always reaches full height regardless of its size.
   const counts = days.map((d) => langData.days[d] || 0);
-  const scaleMax = Math.max(5, ...counts);
+  const scaleMax = Math.max(1, ...counts);
   const maxBarPx = 56;
 
   $("weekly-chart").innerHTML = days.map((d, i) => {

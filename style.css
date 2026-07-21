@@ -421,10 +421,10 @@ button { cursor: pointer; }
   background: var(--border);
 }
 .weekly-bar-fill { width: 100%; background: var(--sage); }
-.weekly-bar-count { font-size: 0.75rem; font-weight: 800; color: var(--ink-dim); min-height: 1em; }
-.weekly-bar-col.is-today .weekly-bar-count { color: var(--sage-deep); }
-.weekly-bar-daylabel { font-size: 0.7rem; font-weight: 800; color: var(--ink-dim); }
-.weekly-bar-col.is-today .weekly-bar-daylabel { color: var(--ink); }
+.weekly-bar-count { font-size: 0.75rem; font-weight: 400; color: var(--ink-dim); min-height: 1em; }
+.weekly-bar-col.is-today .weekly-bar-count { font-weight: 800; color: var(--sage-deep); }
+.weekly-bar-daylabel { font-size: 0.7rem; font-weight: 400; color: var(--ink-dim); }
+.weekly-bar-col.is-today .weekly-bar-daylabel { font-weight: 800; color: var(--ink); }
 
 /* ---------------- Practice screen ---------------- */
 
