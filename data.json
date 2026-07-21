@@ -89,24 +89,24 @@
       "de": {
         "words": {
           "der": {
-            "level": 2,
+            "level": 0,
             "correct": 4,
-            "wrong": 5,
+            "wrong": 8,
             "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-24",
+            "nextDue": "2026-07-21",
             "firstSeen": "2026-07-21"
           },
           "die": {
             "level": 0,
             "correct": 3,
-            "wrong": 8,
+            "wrong": 10,
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-21",
             "firstSeen": "2026-07-21"
           },
           "das": {
             "level": 3,
-            "correct": 6,
+            "correct": 7,
             "wrong": 1,
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-28",
@@ -114,7 +114,7 @@
           },
           "und": {
             "level": 3,
-            "correct": 5,
+            "correct": 6,
             "wrong": 0,
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-28",
@@ -122,48 +122,48 @@
           },
           "ich": {
             "level": 3,
-            "correct": 5,
-            "wrong": 1,
+            "correct": 6,
+            "wrong": 2,
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-28",
             "firstSeen": "2026-07-21"
           },
           "du": {
-            "level": 1,
-            "correct": 5,
+            "level": 2,
+            "correct": 6,
             "wrong": 3,
             "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-21",
+            "nextDue": "2026-07-24",
             "firstSeen": "2026-07-21"
           },
           "ist": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 2,
             "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-22",
+            "nextDue": "2026-07-24",
             "firstSeen": "2026-07-21"
           },
           "mit": {
             "level": 0,
             "correct": 0,
-            "wrong": 4,
+            "wrong": 6,
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-21",
             "firstSeen": "2026-07-21"
           },
           "auf": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-22",
+            "nextDue": "2026-07-24",
             "firstSeen": "2026-07-21"
           }
         },
         "days": {
           "2026-07-20": 41,
-          "2026-07-21": 20
+          "2026-07-21": 34
         }
       },
       "emoji": "🐨"
