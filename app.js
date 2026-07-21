@@ -1467,7 +1467,7 @@ function renderHome() {
     : todayCount === goal ? t("goalReached")
     : t("toGo", goal - todayCount);
 
-  renderWeeklyChart(langData, today, goal);
+  renderWeeklyChart(langData, today);
 }
 
 // Bar chart of the last 7 days (oldest to newest, ending today): height and
@@ -1475,36 +1475,32 @@ function renderHome() {
 // the currently selected language (langData.days) — the same per-day
 // counter driving the streak and daily-goal bar elsewhere on this screen.
 //
-// Scaled against the kid's actual daily goal, not the week's own max: a day
-// that exactly hits the goal renders at GOAL_BAR_PX (marked by a visible
-// goal line), a day under goal renders proportionally shorter, and a day
-// OVER goal renders proportionally taller past the line — capped at
-// GOAL_BAR_PX * OVER_GOAL_CAP so one huge day can't blow out the layout
-// (the printed number above the bar is never capped, only the bar's height).
-const GOAL_BAR_PX = 56;
-const OVER_GOAL_CAP = 2.5;
+// Scaled relative to THIS WEEK'S OWN busiest day (not the daily goal): the
+// tallest bar always reaches MAX_BAR_PX, every other day is a proportional
+// fraction of it, so one standout day (like a big practice binge) reads as
+// dramatically taller rather than everything looking similarly "capped".
+const MAX_BAR_PX = 96;
 
-function renderWeeklyChart(langData, today, goal) {
+function renderWeeklyChart(langData, today) {
   const days = [];
   for (let i = 6; i >= 0; i--) days.push(addDays(today, -i));
   const counts = days.map((d) => langData.days[d] || 0);
-  const maxTrackPx = Math.round(GOAL_BAR_PX * OVER_GOAL_CAP);
+  const scaleMax = Math.max(1, ...counts);
 
   $("weekly-chart").innerHTML = days.map((d, i) => {
     const count = counts[i];
-    const ratio = goal > 0 ? count / goal : 0;
-    const px = Math.min(maxTrackPx, Math.round(ratio * GOAL_BAR_PX));
+    // Any real practice gets at least a sliver of a visible bar — only a
+    // true zero renders as nothing, per the "sit almost on top of the day
+    // label" zero-day treatment.
+    const px = count === 0 ? 0 : Math.max(4, Math.round((count / scaleMax) * MAX_BAR_PX));
     const [y, m, dd] = d.split("-").map(Number);
     const weekday = WEEKDAY_LABELS[state.lang][new Date(y, m - 1, dd).getDay()];
     const isToday = d === today;
     return `
       <div class="weekly-bar-col${isToday ? " is-today" : ""}">
-        <div class="weekly-bar-track" style="height:${maxTrackPx}px" title="${escapeHtml(t("wordsCount", count))}">
+        <div class="weekly-bar-track" style="height:${MAX_BAR_PX}px" title="${escapeHtml(t("wordsCount", count))}">
           <div class="weekly-bar-count" style="bottom:${px + 4}px">${count}</div>
-          <div class="weekly-bar-visual">
-            <div class="weekly-bar-fill" style="height:${px}px"></div>
-            <div class="weekly-bar-goal-line" style="bottom:${GOAL_BAR_PX}px"></div>
-          </div>
+          <div class="weekly-bar-fill" style="height:${px}px"></div>
         </div>
         <div class="weekly-bar-daylabel">${weekday}</div>
       </div>
