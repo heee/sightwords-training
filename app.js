@@ -615,8 +615,7 @@ function startSession(kid, lang) {
   const alreadyIntroduced = getNewIntroducedToday(kid, lang, today);
   const levelId = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || LEVEL_IDS[lang][0];
   const startIndex = levelStartIndex(lang, levelId);
-  const { queue, newlyIntroducedCount } = buildSession(langData, WORDS[lang], kidRecord.settings, today, alreadyIntroduced, startIndex);
-  if (newlyIntroducedCount > 0) addNewIntroducedToday(kid, lang, today, newlyIntroducedCount);
+  const { queue } = buildSession(langData, WORDS[lang], kidRecord.settings, today, alreadyIntroduced, startIndex);
 
   state.session = {
     kid, lang, today,
@@ -642,8 +641,15 @@ function recordAnswer(word, correct) {
   const s = state.session;
   const data = getData();
   const langData = data.kids[s.kid][s.lang];
+  // A word only consumes the day's new-word budget once the kid actually
+  // answers it — not merely because it was placed in a session's queue.
+  // Otherwise a newly-introduced word that gets Skipped (never recorded)
+  // would still burn the budget, starving every later session that day
+  // down to whatever's left (see the "and" repeating bug this fixed).
+  const isNewWord = !langData.words[word];
   const newEntry = applyAnswer(langData.words[word], correct, s.today);
   langData.words[word] = newEntry;
+  if (isNewWord) addNewIntroducedToday(s.kid, s.lang, s.today, 1);
 
   s.wordUpdates[word] = newEntry;
   s.practicedCount++;
