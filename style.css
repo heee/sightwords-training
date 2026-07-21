@@ -241,11 +241,19 @@ button { cursor: pointer; }
 
 /* ---------------- Emoji picker (Settings > Avatar) ---------------- */
 
-.emoji-picker {
+.emoji-picker { margin-bottom: 0.5rem; }
+.avatar-tier { margin-bottom: 0.9rem; }
+.avatar-tier:last-child { margin-bottom: 0; }
+.avatar-tier-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--ink-dim);
+  margin-bottom: 0.4rem;
+}
+.avatar-tier-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 .emoji-btn {
   border: 2px solid var(--border);
@@ -267,6 +275,23 @@ button { cursor: pointer; }
   background: color-mix(in srgb, var(--sage) 18%, var(--card));
 }
 .emoji-btn:active { transform: scale(0.92); }
+.emoji-btn.locked {
+  position: relative;
+  opacity: 0.4;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.emoji-btn.locked:active { transform: none; }
+.emoji-btn-lock {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  font-size: 0.7rem;
+  background: var(--card);
+  border-radius: 50%;
+  line-height: 1;
+  padding: 2px;
+}
 
 /* ---------------- Picker screen ---------------- */
 

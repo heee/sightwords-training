@@ -42,13 +42,45 @@ function levelStartIndex(lang, levelId) {
 // (kidEmoji below), so expanding the full picker list below never shifts
 // the default icon a kid already sees (it only affects new/explicit picks).
 const LEGACY_KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
-// Full set of choices shown in Settings > Avatar.
+// Full set of choices shown in Settings > Avatar — 35 total, split into
+// gamified unlock tiers (10/10/10/5) by AVATAR_TIERS below.
 const KID_EMOJIS = [
   ...LEGACY_KID_EMOJIS,
   "🐯", "🐷", "🐵", "🐔", "🐧", "🦉", "🐺", "🦝", "🦔", "🐌",
   "🐙", "🦕", "🐳", "🦓", "🦒", "🐘", "🐕", "🐈", "🐹", "🐿️",
-  "🦎", "🐩", "🦌", "🐑",
+  "🦎", "🐩", "🦌",
 ];
+
+// Avatar unlock tiers, sliced from KID_EMOJIS in order. unlockAt is the
+// combined (English + German) count of DISTINCT words this kid has EVER
+// mastered — reuses the masteredOn marker (set once, never cleared even if
+// a word's level later drops), so a tier can never re-lock once earned.
+const AVATAR_TIER_SIZES = [10, 10, 10, 5];
+const AVATAR_TIER_THRESHOLDS = [0, 10, 25, 50];
+const AVATAR_TIERS = (() => {
+  const tiers = [];
+  let idx = 0;
+  for (let i = 0; i < AVATAR_TIER_SIZES.length; i++) {
+    tiers.push({ emojis: KID_EMOJIS.slice(idx, idx + AVATAR_TIER_SIZES[i]), unlockAt: AVATAR_TIER_THRESHOLDS[i] });
+    idx += AVATAR_TIER_SIZES[i];
+  }
+  return tiers;
+})();
+
+function combinedEverMastered(kidRecord) {
+  let n = 0;
+  for (const lang of ["en", "de"]) {
+    const words = (kidRecord[lang] && kidRecord[lang].words) || {};
+    for (const entry of Object.values(words)) if (entry.masteredOn) n++;
+  }
+  return n;
+}
+
+function unlockedTierCount(everMastered) {
+  let unlocked = 0;
+  for (const tier of AVATAR_TIERS) { if (everMastered >= tier.unlockAt) unlocked++; }
+  return unlocked;
+}
 
 const state = {
   lang: localStorage.getItem(LS.lang) || "en",
@@ -215,6 +247,10 @@ const T = {
     themeDark: "🌙 Dark",
     general: "General",
     avatarLabel: "Avatar",
+    avatarProgress: (n) => `${n} word${n === 1 ? "" : "s"} mastered combined`,
+    avatarTierUnlocked: (n) => `Tier ${n}`,
+    avatarTierLocked: (n, threshold) => `Tier ${n} — unlocks at ${threshold} words mastered`,
+    avatarLockedTooltip: (threshold) => `Unlocks at ${threshold} words mastered`,
     kidName: "Kid's name",
     wordsPerSession: "Words per session",
     newWordsPerDay: "New words per day",
@@ -298,6 +334,10 @@ const T = {
     themeDark: "🌙 Dunkel",
     general: "Allgemein",
     avatarLabel: "Avatar",
+    avatarProgress: (n) => `${n} ${n === 1 ? "Wort" : "Wörter"} gemeistert (kombiniert)`,
+    avatarTierUnlocked: (n) => `Stufe ${n}`,
+    avatarTierLocked: (n, threshold) => `Stufe ${n} — ab ${threshold} gemeisterten Wörtern`,
+    avatarLockedTooltip: (threshold) => `Schaltet frei ab ${threshold} gemeisterten Wörtern`,
     kidName: "Name des Kindes",
     wordsPerSession: "Wörter pro Sitzung",
     newWordsPerDay: "Neue Wörter pro Tag",
@@ -1594,16 +1634,30 @@ $("btn-summary-home").addEventListener("click", () => showScreen("screen-home"))
 
 $("btn-settings-back").addEventListener("click", () => showScreen("screen-home"));
 
-function renderEmojiPicker(selected) {
-  const el = $("emoji-picker");
-  el.innerHTML = KID_EMOJIS.map((e) => `
-    <button type="button" class="emoji-btn${e === selected ? " selected" : ""}" data-emoji="${e}" aria-label="${e}">${e}</button>
-  `).join("");
+function renderEmojiPicker(selected, kidRecord) {
+  const everMastered = combinedEverMastered(kidRecord);
+  const unlockedCount = unlockedTierCount(everMastered);
+  $("avatar-progress-text").textContent = t("avatarProgress", everMastered);
+
+  $("emoji-picker").innerHTML = AVATAR_TIERS.map((tier, i) => {
+    const locked = i >= unlockedCount;
+    const buttons = tier.emojis.map((e) => locked
+      ? `<button type="button" class="emoji-btn locked" disabled title="${escapeHtml(t("avatarLockedTooltip", tier.unlockAt))}"><span class="emoji-btn-glyph">${e}</span><span class="emoji-btn-lock">🔒</span></button>`
+      : `<button type="button" class="emoji-btn${e === selected ? " selected" : ""}" data-emoji="${e}" aria-label="${e}">${e}</button>`
+    ).join("");
+    const tierLabel = locked ? t("avatarTierLocked", i + 1, tier.unlockAt) : t("avatarTierUnlocked", i + 1);
+    return `
+      <div class="avatar-tier">
+        <div class="avatar-tier-label">${escapeHtml(tierLabel)}</div>
+        <div class="avatar-tier-row">${buttons}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 $("emoji-picker").addEventListener("click", (e) => {
   const btn = e.target.closest(".emoji-btn");
-  if (!btn) return;
+  if (!btn || btn.disabled) return;
   $("emoji-picker").querySelectorAll(".emoji-btn").forEach((b) => b.classList.toggle("selected", b === btn));
 });
 
@@ -1653,7 +1707,7 @@ function renderSettings() {
   $("settings-kid-name").value = kid;
   $("settings-words-per-session").value = kidRecord.settings.wordsPerSession;
   $("settings-new-words-per-day").value = kidRecord.settings.newWordsPerDay;
-  renderEmojiPicker(kidEmojiFor(kidRecord, kid));
+  renderEmojiPicker(kidEmojiFor(kidRecord, kid), kidRecord);
   renderLevelPickers(kidRecord.settings.levels.en, kidRecord.settings.levels.de);
 
   $("confirm-reset").classList.add("hidden");
