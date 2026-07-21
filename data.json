@@ -175,14 +175,40 @@
         "words": {
           "and": {
             "level": 3,
-            "correct": 8,
+            "correct": 9,
             "wrong": 2,
-            "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-27"
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-28",
+            "firstSeen": "2026-07-21"
+          },
+          "a": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 1,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-22",
+            "firstSeen": "2026-07-21"
+          },
+          "away": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-22",
+            "firstSeen": "2026-07-21"
+          },
+          "big": {
+            "level": 2,
+            "correct": 2,
+            "wrong": 1,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-24",
+            "firstSeen": "2026-07-21"
           }
         },
         "days": {
-          "2026-07-20": 10
+          "2026-07-20": 10,
+          "2026-07-21": 7
         }
       },
       "de": {
