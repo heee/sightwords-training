@@ -1348,9 +1348,8 @@ function renderHome() {
   const todayCount = langData.days[today] || 0;
   const goal = kidRecord.settings.wordsPerSession;
   const pct = goal > 0 ? Math.min(1, todayCount / goal) : 0;
-  const circumference = 264;
-  $("progress-ring-fill").style.strokeDashoffset = String(circumference * (1 - pct));
-  $("progress-ring-label").textContent = `${todayCount}/${goal}`;
+  $("progress-bar-fill").style.width = `${pct * 100}%`;
+  $("progress-bar-label").textContent = `${todayCount}/${goal}`;
   $("progress-encouragement").textContent = todayCount === 0
     ? t("letsStart")
     : (todayCount >= goal ? t("goalReached") : t("toGo", goal - todayCount));
