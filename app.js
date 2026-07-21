@@ -925,7 +925,7 @@ function updateMicUI(listening) {
 
 // ------------------- speech: cloud transcription (Groq, via Worker) -------------------
 // Primary voice-capture path when available: records a short clip and sends
-// it to the Worker's /transcribe endpoint (Groq whisper-large-v3). Falls
+// it to the Worker's /transcribe endpoint (Groq whisper-large-v3-turbo). Falls
 // back to the Web Speech API above when the Worker/key isn't configured, or
 // when this browser can't record audio at all (no MediaRecorder/getUserMedia).
 
@@ -968,6 +968,13 @@ function isNoSpeechTranscript(rawText, targetWord, lang) {
 async function ensureMicStream() {
   if (state.micStream) return state.micStream;
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  // The permission prompt / acquisition can outlive the practice screen
+  // (e.g. session ended while it was pending) — don't hold a live mic
+  // stream after releaseMic() already ran for that screen.
+  if (state.screen !== "screen-practice") {
+    stream.getTracks().forEach((tr) => tr.stop());
+    throw new Error("practice screen left during mic acquisition");
+  }
   state.micStream = stream;
   return stream;
 }
@@ -978,6 +985,23 @@ function pickMimeType() {
     if (MediaRecorder.isTypeSupported(c)) return c;
   }
   return undefined; // browser default
+}
+
+// Pre-acquires the mic stream and AudioContext inside the Start-practice tap
+// (a user gesture, which iOS requires for AudioContext) so the session's
+// first answer doesn't pay getUserMedia/setup latency on the mic tap.
+// Fire-and-forget: a denial here is surfaced later by the tap handler's own
+// ensureMicStream call, with the micDenied toast.
+function prewarmMic() {
+  if (!cloudModeActive()) return;
+  if (!state.micAudioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) state.micAudioCtx = new AudioCtx();
+  }
+  if (state.micAudioCtx && state.micAudioCtx.state === "suspended") {
+    state.micAudioCtx.resume().catch(() => {});
+  }
+  ensureMicStream().catch(() => { /* surfaced on first mic tap */ });
 }
 
 // Releases every mic-related resource. Safe to call any time (including
@@ -1002,9 +1026,20 @@ function releaseMic() {
   }
 }
 
+// Voice-activity tuning for the in-recording level meter. RMS is computed
+// from byte time-domain data (quiet room ~0.005-0.01, speech ~0.05-0.3).
+// Once speech has been heard, ~0.7s of sustained quiet ends the recording
+// immediately instead of waiting out the full hard cap — this is the main
+// thing that makes answers feel fast.
+const VAD_SAMPLE_MS = 60;
+const VAD_SPEECH_RMS = 0.03;  // at/above: definitely speech
+const VAD_QUIET_RMS = 0.02;   // below: counts toward the end-of-speech quiet run
+const VAD_QUIET_STOP_MS = 700;
+const RECORD_MAX_MS = 3500;   // hard cap (also the total wait when no speech is detected)
+
 // Mic tap in cloud mode: first tap starts recording, a second tap while
-// recording stops it early; recording also auto-stops after 3.5s. Runs a
-// WebAudio level meter alongside the recording to detect near-silence.
+// recording stops it early; recording auto-stops ~0.7s after the child
+// finishes speaking (voice-activity detection), or after the hard cap.
 async function startCloudListening() {
   if (state.micBusy || !state.session) return;
   if (state.micRecording) {
@@ -1043,6 +1078,8 @@ async function startCloudListening() {
     } catch (e) { analyser = null; source = null; }
   }
   if (analyser) {
+    let speechHeard = false;
+    let quietMs = 0;
     state.micLevelTimer = setInterval(() => {
       analyser.getByteTimeDomainData(dataArray);
       let sumSquares = 0;
@@ -1052,7 +1089,17 @@ async function startCloudListening() {
       }
       const rms = Math.sqrt(sumSquares / dataArray.length);
       if (rms > peakRms) peakRms = rms;
-    }, 100);
+      // End-of-speech detection: a sustained quiet run after speech stops
+      // the recording right away. Levels between the two thresholds are
+      // ambiguous — they neither extend speech nor count as quiet.
+      if (rms >= VAD_SPEECH_RMS) {
+        speechHeard = true;
+        quietMs = 0;
+      } else if (speechHeard && rms < VAD_QUIET_RMS) {
+        quietMs += VAD_SAMPLE_MS;
+        if (quietMs >= VAD_QUIET_STOP_MS) stopCloudRecording();
+      }
+    }, VAD_SAMPLE_MS);
   }
 
   const mimeType = pickMimeType();
@@ -1089,7 +1136,7 @@ async function startCloudListening() {
   }
   updateMicUI(true);
 
-  state.micRecordTimer = setTimeout(() => { stopCloudRecording(); }, 3500);
+  state.micRecordTimer = setTimeout(() => { stopCloudRecording(); }, RECORD_MAX_MS);
 }
 
 function stopCloudRecording() {
@@ -1295,6 +1342,7 @@ $("btn-start-practice").addEventListener("click", () => {
     return;
   }
   showScreen("screen-practice");
+  prewarmMic();
 });
 
 // ---- practice screen ----

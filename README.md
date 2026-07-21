@@ -192,7 +192,7 @@ appear in their own collapsed "Below level (assumed known)" group instead of
 
 The primary voice-capture path is **cloud transcription**: tapping the mic
 records a short clip (up to 3.5s) and sends it to the Worker's
-`/transcribe` endpoint, which forwards it to Groq's `whisper-large-v3` model
+`/transcribe` endpoint, which forwards it to Groq's `whisper-large-v3-turbo` model
 and returns the transcript. This works in **Safari and installed
 home-screen PWAs alike** on iOS (unlike the old in-browser recognizer), and
 needs mic permission on first use each session. Audio clips are sent to Groq

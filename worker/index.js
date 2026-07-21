@@ -18,7 +18,7 @@
 //   POST /delete-kid     -> { kid } -> removes kid entirely
 //   POST /transcribe?lang=en|de -> body: raw audio bytes (Content-Type: audio/mp4 |
 //                            audio/webm[;codecs=...] | audio/ogg | audio/wav | audio/wave)
-//                            -> forwards to Groq whisper-large-v3 and returns { text }.
+//                            -> forwards to Groq whisper-large-v3-turbo and returns { text }.
 //                            501 if GROQ_API_KEY isn't configured (client falls back to
 //                            Web Speech in that case).
 //
@@ -199,7 +199,9 @@ export default {
       try {
         const form = new FormData();
         form.append("file", new File([bytes], filename, { type: contentType }));
-        form.append("model", "whisper-large-v3");
+        // turbo: ~2x faster inference than whisper-large-v3, still fully
+        // multilingual — negligible accuracy difference on single words.
+        form.append("model", "whisper-large-v3-turbo");
         form.append("language", lang);
         form.append("temperature", "0");
         form.append("response_format", "json");
