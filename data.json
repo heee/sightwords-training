@@ -89,18 +89,18 @@
       "de": {
         "words": {
           "der": {
-            "level": 2,
-            "correct": 2,
-            "wrong": 0,
+            "level": 0,
+            "correct": 1,
+            "wrong": 2,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-23"
+            "nextDue": "2026-07-20"
           },
           "die": {
-            "level": 2,
-            "correct": 2,
-            "wrong": 0,
+            "level": 0,
+            "correct": 1,
+            "wrong": 2,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-23"
+            "nextDue": "2026-07-20"
           },
           "das": {
             "level": 2,
@@ -108,10 +108,31 @@
             "wrong": 1,
             "lastSeen": "2026-07-20",
             "nextDue": "2026-07-23"
+          },
+          "und": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21"
+          },
+          "ich": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21"
+          },
+          "du": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21"
           }
         },
         "days": {
-          "2026-07-20": 7
+          "2026-07-20": 12
         }
       },
       "emoji": "🐨"
