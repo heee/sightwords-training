@@ -161,8 +161,32 @@
         }
       },
       "de": {
-        "words": {},
-        "days": {}
+        "words": {
+          "der": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21"
+          },
+          "die": {
+            "level": 1,
+            "correct": 2,
+            "wrong": 4,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21"
+          },
+          "das": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21"
+          }
+        },
+        "days": {
+          "2026-07-20": 8
+        }
       },
       "emoji": "🦋"
     }
