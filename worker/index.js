@@ -37,7 +37,12 @@
 //                            in-browser Web Speech API.
 
 const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "prek" } };
-const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
+const KID_EMOJIS = [
+  "🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝",
+  "🐯", "🐷", "🐵", "🐔", "🐧", "🦉", "🐺", "🦝", "🦔", "🐌",
+  "🐙", "🦕", "🐳", "🦓", "🦒", "🐘", "🐕", "🐈", "🐹", "🐿️",
+  "🦎", "🐩", "🦌", "🐑",
+];
 const MAX_WORDS_PER_SESSION = 50;
 const MIN_WORDS_PER_SESSION = 5;
 const MAX_NEW_WORDS_PER_DAY = 10;
@@ -323,7 +328,14 @@ function validateProgress(body) {
     if (!Number.isFinite(correct) || correct < 0 || correct > 10000) return null;
     if (!Number.isFinite(wrong) || wrong < 0 || wrong > 10000) return null;
     if (!lastSeen || !nextDue) return null;
-    words[word.trim().slice(0, 60)] = { level, correct, wrong, lastSeen, nextDue };
+    // firstSeen/masteredOn power the home screen's 7-day activity chart.
+    // firstSeen falls back to lastSeen for older entries that predate it;
+    // masteredOn is optional (only set once a word first reaches level 3).
+    const firstSeen = typeof entry.firstSeen === "string" && DATE_RE.test(entry.firstSeen) ? entry.firstSeen : lastSeen;
+    const masteredOn = typeof entry.masteredOn === "string" && DATE_RE.test(entry.masteredOn) ? entry.masteredOn : null;
+    const wordEntry = { level, correct, wrong, lastSeen, nextDue, firstSeen };
+    if (masteredOn) wordEntry.masteredOn = masteredOn;
+    words[word.trim().slice(0, 60)] = wordEntry;
   }
 
   return { kid, lang, day, dayCount, words };

@@ -38,7 +38,17 @@ function levelStartIndex(lang, levelId) {
   const found = (LEVELS[lang] || []).find((l) => l.id === levelId);
   return found ? found.startIndex : 0;
 }
-const KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
+// Frozen — used only for the deterministic per-name auto-avatar fallback
+// (kidEmoji below), so expanding the full picker list below never shifts
+// the default icon a kid already sees (it only affects new/explicit picks).
+const LEGACY_KID_EMOJIS = ["🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝"];
+// Full set of choices shown in Settings > Avatar.
+const KID_EMOJIS = [
+  ...LEGACY_KID_EMOJIS,
+  "🐯", "🐷", "🐵", "🐔", "🐧", "🦉", "🐺", "🦝", "🦔", "🐌",
+  "🐙", "🦕", "🐳", "🦓", "🦒", "🐘", "🐕", "🐈", "🐹", "🐿️",
+  "🦎", "🐩", "🦌", "🐑",
+];
 
 const state = {
   lang: localStorage.getItem(LS.lang) || "en",
@@ -106,7 +116,15 @@ function hashString(str) {
   return Math.abs(h);
 }
 
-function kidEmoji(name) { return KID_EMOJIS[hashString(name) % KID_EMOJIS.length]; }
+function kidEmoji(name) { return LEGACY_KID_EMOJIS[hashString(name) % LEGACY_KID_EMOJIS.length]; }
+
+// Single-letter weekday labels for the home screen's 7-day chart, indexed
+// by Date#getDay() (0=Sun..6=Sat). Kept single-letter to stay compact and
+// to sidestep a locale-specific abbreviation list for a minor chart label.
+const WEEKDAY_LABELS = {
+  en: ["S", "M", "T", "W", "T", "F", "S"],
+  de: ["S", "M", "D", "M", "D", "F", "S"],
+};
 
 function shuffleArray(arr) {
   const a = arr.slice();
@@ -159,8 +177,10 @@ const T = {
     streak: (n) => `${n} day${n === 1 ? "" : "s"} streak`,
     letsStart: "Let's get started!",
     goalReached: "Goal reached! 🎉",
+    goalExceeded: (n) => `Goal smashed — ${n} extra! 🌟`,
     toGo: (n) => `${n} to go!`,
-    statsText: (seen, mastered) => `${seen} words seen · ${mastered} mastered`,
+    last7Days: "Last 7 days",
+    weeklyTooltip: (seen, mastered) => `${seen} new · ${mastered} mastered`,
     startPractice: "Start practice ▶",
     speechUnsupported: "Speech isn't available here — open this page in Safari.",
     whatWord: "What word is this?",
@@ -234,8 +254,10 @@ const T = {
     streak: (n) => `${n} Tag${n === 1 ? "" : "e"} Serie`,
     letsStart: "Los geht's!",
     goalReached: "Ziel erreicht! 🎉",
+    goalExceeded: (n) => `Ziel übertroffen — ${n} extra! 🌟`,
     toGo: (n) => `Noch ${n}!`,
-    statsText: (seen, mastered) => `${seen} Wörter gesehen · ${mastered} gemeistert`,
+    last7Days: "Letzte 7 Tage",
+    weeklyTooltip: (seen, mastered) => `${seen} neu · ${mastered} gemeistert`,
     startPractice: "Übung starten ▶",
     speechUnsupported: "Spracherkennung ist hier nicht verfügbar — öffne diese Seite in Safari.",
     whatWord: "Welches Wort ist das?",
@@ -319,6 +341,9 @@ function applyStaticTranslations() {
   $("btn-open-settings").setAttribute("aria-label", t("settings"));
   $("btn-open-settings").title = t("settings");
   $("btn-start-practice").textContent = t("startPractice");
+  $("weekly-chart-title").textContent = t("last7Days");
+  $("legend-seen-label").textContent = t("levelNew");
+  $("legend-mastered-label").textContent = t("levelMastered");
 
   $("speech-unsupported-banner").textContent = t("speechUnsupported");
   $("btn-mic").setAttribute("aria-label", t("tapToListen"));
@@ -552,12 +577,19 @@ async function trySyncProgressNow(kid, lang, words, day, dayCount) {
 // ------------------- session engine: spaced repetition -------------------
 
 function applyAnswer(entry, correct, today) {
-  const e = entry ? { ...entry } : { level: 0, correct: 0, wrong: 0, lastSeen: today, nextDue: today };
+  const e = entry ? { ...entry } : { level: 0, correct: 0, wrong: 0, lastSeen: today, nextDue: today, firstSeen: today };
+  // Backfills firstSeen for any entry that predates this field, so it never
+  // fabricates a false history — it just starts counting from today.
+  if (!e.firstSeen) e.firstSeen = today;
   if (correct) {
     e.level = Math.min(3, e.level + 1);
     e.correct += 1;
     const interval = { 1: 1, 2: 3, 3: 7 }[e.level];
     e.nextDue = addDays(today, interval);
+    // masteredOn is set once, the first time a word reaches level 3, and
+    // never moves even if it's later answered wrong and demoted — it marks
+    // when the word was first mastered, not its current level.
+    if (e.level === 3 && !e.masteredOn) e.masteredOn = today;
   } else {
     e.level = Math.max(0, e.level - 1);
     e.wrong += 1;
@@ -1354,11 +1386,51 @@ function renderHome() {
   $("progress-bar-label").textContent = `${todayCount}/${goal}`;
   $("progress-encouragement").textContent = todayCount === 0
     ? t("letsStart")
-    : (todayCount >= goal ? t("goalReached") : t("toGo", goal - todayCount));
+    : todayCount > goal ? t("goalExceeded", todayCount - goal)
+    : todayCount === goal ? t("goalReached")
+    : t("toGo", goal - todayCount);
 
-  const wordsSeen = Object.keys(langData.words).length;
-  const mastered = Object.values(langData.words).filter((w) => w.level === 3).length;
-  $("stats-text").textContent = t("statsText", wordsSeen, mastered);
+  renderWeeklyChart(langData, today);
+}
+
+// Split bar chart of the last 7 days (oldest to newest, ending today):
+// each day's bar is split into new words first seen that day (bottom,
+// powder) and words that first reached Mastered that day (top, sage).
+function renderWeeklyChart(langData, today) {
+  const words = langData.words || {};
+  const days = [];
+  for (let i = 6; i >= 0; i--) days.push(addDays(today, -i));
+
+  const seenByDay = {};
+  const masteredByDay = {};
+  for (const d of days) { seenByDay[d] = 0; masteredByDay[d] = 0; }
+  for (const entry of Object.values(words)) {
+    if (entry.firstSeen && seenByDay[entry.firstSeen] !== undefined) seenByDay[entry.firstSeen]++;
+    if (entry.masteredOn && masteredByDay[entry.masteredOn] !== undefined) masteredByDay[entry.masteredOn]++;
+  }
+
+  const totals = days.map((d) => seenByDay[d] + masteredByDay[d]);
+  const scaleMax = Math.max(5, ...totals);
+  const maxBarPx = 56;
+
+  $("weekly-chart").innerHTML = days.map((d) => {
+    const seen = seenByDay[d];
+    const mastered = masteredByDay[d];
+    const seenPx = Math.round((seen / scaleMax) * maxBarPx);
+    const masteredPx = Math.round((mastered / scaleMax) * maxBarPx);
+    const [y, m, dd] = d.split("-").map(Number);
+    const weekday = WEEKDAY_LABELS[state.lang][new Date(y, m - 1, dd).getDay()];
+    const isToday = d === today;
+    return `
+      <div class="weekly-bar-col${isToday ? " is-today" : ""}">
+        <div class="weekly-bar-track" title="${escapeHtml(t("weeklyTooltip", seen, mastered))}">
+          <div class="weekly-bar-seen" style="height:${seenPx}px"></div>
+          <div class="weekly-bar-mastered" style="height:${masteredPx}px"></div>
+        </div>
+        <div class="weekly-bar-daylabel">${weekday}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 $("btn-start-practice").addEventListener("click", () => {
