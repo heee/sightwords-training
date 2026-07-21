@@ -98,9 +98,10 @@
           "die": {
             "level": 0,
             "correct": 3,
-            "wrong": 5,
+            "wrong": 7,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-20"
+            "nextDue": "2026-07-20",
+            "firstSeen": "2026-07-20"
           },
           "das": {
             "level": 3,
@@ -129,10 +130,34 @@
             "wrong": 0,
             "lastSeen": "2026-07-20",
             "nextDue": "2026-07-27"
+          },
+          "ist": {
+            "level": 0,
+            "correct": 0,
+            "wrong": 1,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-20",
+            "firstSeen": "2026-07-20"
+          },
+          "mit": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 1,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21",
+            "firstSeen": "2026-07-20"
+          },
+          "auf": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 1,
+            "lastSeen": "2026-07-20",
+            "nextDue": "2026-07-21",
+            "firstSeen": "2026-07-20"
           }
         },
         "days": {
-          "2026-07-20": 34
+          "2026-07-20": 41
         }
       },
       "emoji": "🐨"
