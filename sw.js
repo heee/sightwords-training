@@ -1,6 +1,6 @@
 // Minimal app-shell cache so the PWA opens instantly and installs cleanly.
 // Never intercepts the Worker's API — that must always hit the network.
-const CACHE_NAME = "swt-shell-v9";
+const CACHE_NAME = "swt-shell-v10";
 const SHELL_FILES = [
   "./",
   "./index.html",

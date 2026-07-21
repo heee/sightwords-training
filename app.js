@@ -1344,6 +1344,8 @@ function renderHome() {
 
   const streak = computeStreak(langData.days, today);
   $("streak-text").textContent = t("streak", streak);
+  $("streak-icon").textContent = streak === 0 ? "🧊" : "🔥";
+  $("card-streak").classList.toggle("no-streak", streak === 0);
 
   const todayCount = langData.days[today] || 0;
   const goal = kidRecord.settings.wordsPerSession;
