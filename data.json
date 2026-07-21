@@ -139,8 +139,12 @@
     },
     "Natalie": {
       "settings": {
-        "wordsPerSession": 20,
-        "newWordsPerDay": 3
+        "wordsPerSession": 10,
+        "newWordsPerDay": 3,
+        "levels": {
+          "en": "prek",
+          "de": "prek"
+        }
       },
       "en": {
         "words": {
@@ -159,7 +163,8 @@
       "de": {
         "words": {},
         "days": {}
-      }
+      },
+      "emoji": "🦋"
     }
   }
 }
