@@ -454,7 +454,7 @@ button { cursor: pointer; }
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--ochre);
+  background: var(--sage);
   border-radius: 7px;
   transition: height 0.3s ease;
 }
@@ -471,7 +471,7 @@ button { cursor: pointer; }
   white-space: nowrap;
   transition: bottom 0.3s ease;
 }
-.weekly-bar-col.is-today .weekly-bar-count { font-weight: 800; color: var(--ochre-deep); }
+.weekly-bar-col.is-today .weekly-bar-count { font-weight: 800; color: var(--sage-deep); }
 .weekly-bar-daylabel { font-size: 0.7rem; font-weight: 400; color: var(--ink-dim); }
 .weekly-bar-col.is-today .weekly-bar-daylabel { font-weight: 800; color: var(--ink); }
 
