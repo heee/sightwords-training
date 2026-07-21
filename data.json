@@ -163,16 +163,16 @@
       "de": {
         "words": {
           "der": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-21"
+            "nextDue": "2026-07-23"
           },
           "die": {
             "level": 1,
-            "correct": 2,
-            "wrong": 4,
+            "correct": 3,
+            "wrong": 5,
             "lastSeen": "2026-07-20",
             "nextDue": "2026-07-21"
           },
@@ -185,7 +185,7 @@
           }
         },
         "days": {
-          "2026-07-20": 8
+          "2026-07-20": 11
         }
       },
       "emoji": "🦋"
