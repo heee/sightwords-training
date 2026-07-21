@@ -864,7 +864,10 @@ const EN_EQUIV_GROUPS = [
   ["so", "sew"],
   ["do", "due", "dew"],
   ["in", "inn"],
-  ["an", "ann"],
+  ["an", "ann", "and"], // "an" is short/low-energy enough that ASR (and
+  // Groq Whisper especially, out of natural sentence context) commonly
+  // completes it toward the far more frequent "and" - reported case.
+  ["a", "uh"], // common filler-like transcription of the bare article
   ["are", "r"],
   ["why", "y"],
   ["you", "u"],
@@ -896,7 +899,7 @@ function isMatch(alternatives, targetWord, lang) {
     if (EQUIV[lang].find(tok) === targetCanon) return true;
     const tokFold = lang === "de" ? foldGerman(tok) : tok;
     if (tokFold === targetFold) return true;
-    if (targetNorm.length >= 5 && levenshtein(tok, targetNorm) <= 1) return true;
+    if (targetNorm.length >= 4 && levenshtein(tok, targetNorm) <= 1) return true;
     return false;
   }
 
@@ -1040,27 +1043,34 @@ let cloudSpeechDisabled = false;
 
 function cloudModeActive() { return cloudSpeechAvailable && !cloudSpeechDisabled; }
 
-// Phrases Whisper is prone to hallucinating on silence/background noise
-// (video outro captions it saw a lot of in training). Checked against the
-// raw (lower-cased, unnormalized) transcript so punctuation like "www."
-// still matches.
+// Phrases Whisper is prone to hallucinating on silence, background noise,
+// or a very short/quiet clip (a single isolated sight word gives it far
+// less to work with than natural speech, and it "completes" toward
+// whatever's statistically likely — often a generic filler or video-outro
+// phrase from its training data). Checked against the raw (lower-cased,
+// unnormalized) transcript so punctuation like "www." still matches.
 const HALLUCINATION_PHRASES = [
   "untertitel", "amara.org", "subtitles", "subscribe", "www.", "copyright",
   "vielen dank fürs zuschauen", "thanks for watching", "thank you for watching",
+  "thank you", "thanks", "bye", "okay", "mm-hmm",
 ];
 
 // Decides whether a cloud transcript should be treated as "didn't hear
 // anything usable" rather than fed into the matcher — covers empty results,
 // known Whisper hallucination phrases, and long rambles that don't match the
 // target word (far more likely noise misheard as a sentence than an actual
-// wrong answer).
+// wrong answer). isMatch is checked FIRST and short-circuits everything
+// else: a genuine correct answer must never be discarded as a "hallucination"
+// just because it happens to contain a filler substring (e.g. target word
+// "you" or "your" containing "you", one of the phrases above).
 function isNoSpeechTranscript(rawText, targetWord, lang) {
   const norm = normalizeTranscript(rawText || "");
   if (!norm) return true;
+  if (isMatch([rawText], targetWord, lang)) return false;
   const lower = String(rawText).toLowerCase();
   if (HALLUCINATION_PHRASES.some((p) => lower.includes(p))) return true;
   const tokenCount = norm.split(" ").filter(Boolean).length;
-  if (tokenCount > 6 && !isMatch([rawText], targetWord, lang)) return true;
+  if (tokenCount > 6) return true;
   return false;
 }
 
@@ -1307,8 +1317,15 @@ function handleCloudTranscript(text) {
   const word = currentWord();
   if (!word || !state.session) return;
   if (isNoSpeechTranscript(text, word, state.session.lang)) {
+    console.log(`[speech] target="${word}" heard="${text}" -> treated as no speech`);
     handleNoSpeech();
     return;
+  }
+  if (!isMatch([text], word, state.session.lang)) {
+    // Not a bug report by itself, but the single most useful line for
+    // diagnosing a "said it right but marked wrong" report afterwards —
+    // check Safari's on-device Web Inspector console for these.
+    console.log(`[speech] target="${word}" heard="${text}" -> did not match`);
   }
   handleRecognitionResult([text]);
 }
@@ -1909,10 +1926,26 @@ $("btn-leaderboard-back").addEventListener("click", () => showScreen("screen-hom
 
 // ------------------- init -------------------
 
+// Reload once, automatically, the moment a new service worker takes
+// control. Without this, sw.js's skipWaiting()/clients.claim() only make
+// the new worker win future network requests — the already-open page
+// keeps running its OLD in-memory JS/CSS until something reloads it. iOS
+// Safari also only lazily checks for a new worker version (often not at
+// all if the installed app was merely backgrounded rather than fully
+// closed), so every shipped fix used to need an explicit force-close from
+// the user. registration.update() below asks for that check proactively
+// on every launch instead of waiting on the browser's own schedule.
 function registerServiceWorker() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  }
+  if (!("serviceWorker" in navigator)) return;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+  navigator.serviceWorker.register("sw.js").then((reg) => {
+    reg.update().catch(() => {});
+  }).catch(() => {});
 }
 
 async function init() {
