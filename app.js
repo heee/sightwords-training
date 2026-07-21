@@ -45,6 +45,11 @@ const state = {
   theme: localStorage.getItem(LS.theme) || "light",
   currentKid: localStorage.getItem(LS.lastKid) || "",
   screen: "screen-picker",
+  // Shuffled order of the non-last-selected kids on the picker screen —
+  // recomputed each time the picker is freshly entered (see showScreen),
+  // but reused across re-renders during the same visit (e.g. a language
+  // toggle click) so the cards don't jitter while visible.
+  pickerShuffle: null,
   session: null,
   recognizing: false,
   autoAdvanceTimer: null,
@@ -102,6 +107,15 @@ function hashString(str) {
 }
 
 function kidEmoji(name) { return KID_EMOJIS[hashString(name) % KID_EMOJIS.length]; }
+
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // A kid's emoji defaults to a deterministic hash of their name, but can be
 // overridden per-kid in Settings — the stored choice always wins.
@@ -1215,6 +1229,7 @@ function handleCloudTranscript(text) {
 
 function showScreen(id) {
   if (state.screen === "screen-practice" && id !== "screen-practice") releaseMic();
+  if (id === "screen-picker" && state.screen !== "screen-picker") state.pickerShuffle = null;
   document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
   $(id).classList.add("active");
   state.screen = id;
@@ -1257,7 +1272,18 @@ $("theme-toggle").addEventListener("click", (e) => {
 function renderPicker() {
   syncLangToggles();
   const data = getData();
-  const names = Object.keys(data.kids).sort((a, b) => a.localeCompare(b));
+  const allNames = Object.keys(data.kids);
+  const lastSelected = state.currentKid && allNames.includes(state.currentKid) ? state.currentKid : null;
+  const others = allNames.filter((n) => n !== lastSelected);
+  if (!state.pickerShuffle) state.pickerShuffle = shuffleArray(others);
+  // Keep only still-existing names in shuffle order, then append any name
+  // the cached shuffle doesn't know about yet (e.g. a kid created since)
+  // so nothing is ever silently dropped from the list.
+  const shuffled = new Set(state.pickerShuffle);
+  const orderedOthers = state.pickerShuffle
+    .filter((n) => others.includes(n))
+    .concat(others.filter((n) => !shuffled.has(n)));
+  const names = lastSelected ? [lastSelected, ...orderedOthers] : orderedOthers;
   const list = $("kid-list");
   list.innerHTML = "";
   for (const name of names) {
