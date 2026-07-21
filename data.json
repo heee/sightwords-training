@@ -214,6 +214,24 @@
         }
       },
       "emoji": "🦋"
+    },
+    "Test": {
+      "settings": {
+        "wordsPerSession": 20,
+        "newWordsPerDay": 3,
+        "levels": {
+          "en": "prek",
+          "de": "prek"
+        }
+      },
+      "en": {
+        "words": {},
+        "days": {}
+      },
+      "de": {
+        "words": {},
+        "days": {}
+      }
     }
   }
 }
