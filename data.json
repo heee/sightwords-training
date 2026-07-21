@@ -70,7 +70,7 @@
           "an": {
             "level": 0,
             "correct": 0,
-            "wrong": 10,
+            "wrong": 11,
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-21",
             "firstSeen": "2026-07-21"
@@ -102,7 +102,7 @@
           "been": {
             "level": 0,
             "correct": 0,
-            "wrong": 4,
+            "wrong": 5,
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-21",
             "firstSeen": "2026-07-21"
@@ -114,11 +114,27 @@
             "lastSeen": "2026-07-21",
             "nextDue": "2026-07-24",
             "firstSeen": "2026-07-21"
+          },
+          "best": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-22",
+            "firstSeen": "2026-07-21"
+          },
+          "both": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 1,
+            "lastSeen": "2026-07-21",
+            "nextDue": "2026-07-22",
+            "firstSeen": "2026-07-21"
           }
         },
         "days": {
           "2026-07-20": 32,
-          "2026-07-21": 31
+          "2026-07-21": 36
         }
       },
       "de": {
