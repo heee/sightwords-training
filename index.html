@@ -52,7 +52,10 @@
   <!-- ============ SCREEN: HOME ============ -->
   <section id="screen-home" class="screen">
     <div class="home-topbar">
-      <button id="btn-switch-kid" type="button" class="icon-btn" aria-label="Switch kid" title="Switch kid">👥</button>
+      <div class="home-topbar-left">
+        <button id="btn-switch-kid" type="button" class="icon-btn" aria-label="Switch kid" title="Switch kid">👥</button>
+        <button id="btn-leaderboard" type="button" class="icon-btn" aria-label="Leaderboard" title="Leaderboard">🏆</button>
+      </div>
       <div id="home-lang-toggle" class="lang-toggle lang-toggle-compact" role="tablist">
         <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇺🇸</button>
         <button type="button" class="lang-btn" data-lang="de" aria-label="Deutsch">🇩🇪</button>
@@ -212,6 +215,18 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- ============ SCREEN: LEADERBOARD ============ -->
+  <section id="screen-leaderboard" class="screen">
+    <div class="settings-topbar">
+      <button id="btn-leaderboard-back" type="button" class="icon-btn" aria-label="Back" title="Back">←</button>
+      <h1 id="leaderboard-heading" class="screen-title settings-title">Leaderboard</h1>
+    </div>
+
+    <div id="period-picker" class="level-picker" role="tablist"></div>
+
+    <div id="leaderboard-list" class="leaderboard-list"></div>
   </section>
 
 </div>

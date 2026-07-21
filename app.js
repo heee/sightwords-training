@@ -60,6 +60,7 @@ const state = {
   // but reused across re-renders during the same visit (e.g. a language
   // toggle click) so the cards don't jitter while visible.
   pickerShuffle: null,
+  leaderboardPeriod: "week",
   session: null,
   recognizing: false,
   autoAdvanceTimer: null,
@@ -118,12 +119,13 @@ function hashString(str) {
 
 function kidEmoji(name) { return LEGACY_KID_EMOJIS[hashString(name) % LEGACY_KID_EMOJIS.length]; }
 
-// Single-letter weekday labels for the home screen's 7-day chart, indexed
-// by Date#getDay() (0=Sun..6=Sat). Kept single-letter to stay compact and
-// to sidestep a locale-specific abbreviation list for a minor chart label.
+// Weekday labels for the home screen's 7-day chart, indexed by
+// Date#getDay() (0=Sun..6=Sat). Short but recognizable abbreviations for a
+// child audience — 3-letter for English (Mon, Tue...), the idiomatic
+// 2-letter form for German (Mo, Di...).
 const WEEKDAY_LABELS = {
-  en: ["S", "M", "T", "W", "T", "F", "S"],
-  de: ["S", "M", "D", "M", "D", "F", "S"],
+  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  de: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
 };
 
 function shuffleArray(arr) {
@@ -181,6 +183,13 @@ const T = {
     toGo: (n) => `${n} to go!`,
     last7Days: "Last 7 days",
     weeklyTooltip: (seen, mastered) => `${seen} new · ${mastered} mastered`,
+    leaderboard: "Leaderboard",
+    periodDay: "Day",
+    periodWeek: "Week",
+    periodMonth: "Month",
+    periodQuarter: "Quarter",
+    periodYear: "Year",
+    wordsCount: (n) => `${n} word${n === 1 ? "" : "s"}`,
     startPractice: "Start practice ▶",
     speechUnsupported: "Speech isn't available here — open this page in Safari.",
     whatWord: "What word is this?",
@@ -258,6 +267,13 @@ const T = {
     toGo: (n) => `Noch ${n}!`,
     last7Days: "Letzte 7 Tage",
     weeklyTooltip: (seen, mastered) => `${seen} neu · ${mastered} gemeistert`,
+    leaderboard: "Bestenliste",
+    periodDay: "Tag",
+    periodWeek: "Woche",
+    periodMonth: "Monat",
+    periodQuarter: "Quartal",
+    periodYear: "Jahr",
+    wordsCount: (n) => `${n} ${n === 1 ? "Wort" : "Wörter"}`,
     startPractice: "Übung starten ▶",
     speechUnsupported: "Spracherkennung ist hier nicht verfügbar — öffne diese Seite in Safari.",
     whatWord: "Welches Wort ist das?",
@@ -344,6 +360,10 @@ function applyStaticTranslations() {
   $("weekly-chart-title").textContent = t("last7Days");
   $("legend-seen-label").textContent = t("levelNew");
   $("legend-mastered-label").textContent = t("levelMastered");
+  $("btn-leaderboard").setAttribute("aria-label", t("leaderboard"));
+  $("btn-leaderboard").title = t("leaderboard");
+  $("leaderboard-heading").textContent = t("leaderboard");
+  renderPeriodPicker();
 
   $("speech-unsupported-banner").textContent = t("speechUnsupported");
   $("btn-mic").setAttribute("aria-label", t("tapToListen"));
@@ -1269,6 +1289,7 @@ function showScreen(id) {
   if (id === "screen-home") renderHome();
   if (id === "screen-settings") renderSettings();
   if (id === "screen-practice") renderPracticeWord();
+  if (id === "screen-leaderboard") renderLeaderboard();
 }
 
 function syncLangToggles() {
@@ -1775,6 +1796,75 @@ $("btn-delete-kid-confirm").addEventListener("click", async () => {
   toast(t("kidDeleted"));
   showScreen("screen-picker");
 });
+
+// ---- leaderboard screen ----
+
+const PERIOD_IDS = ["day", "week", "month", "quarter", "year"];
+const PERIOD_LABEL_KEYS = {
+  day: "periodDay", week: "periodWeek", month: "periodMonth",
+  quarter: "periodQuarter", year: "periodYear",
+};
+// Rolling trailing windows ending today (not calendar-aligned weeks/months/
+// years) — consistent with the spaced-repetition engine and the 7-day
+// chart, and sidesteps locale-specific "what day does the week start on"
+// questions for a simple family leaderboard.
+const PERIOD_DAY_SPANS = { day: 1, week: 7, month: 30, quarter: 90, year: 365 };
+
+function renderPeriodPicker() {
+  $("period-picker").innerHTML = PERIOD_IDS.map((p) => `
+    <button type="button" class="level-btn${p === state.leaderboardPeriod ? " selected" : ""}" data-period="${p}">${escapeHtml(t(PERIOD_LABEL_KEYS[p]))}</button>
+  `).join("");
+}
+
+$("period-picker").addEventListener("click", (e) => {
+  const btn = e.target.closest(".level-btn");
+  if (!btn) return;
+  state.leaderboardPeriod = btn.dataset.period;
+  renderPeriodPicker();
+  renderLeaderboard();
+});
+
+// Total words practiced per kid across BOTH languages combined (a kid who
+// splits practice between English and German gets credit for all of it),
+// within the trailing window for the selected period.
+function computeLeaderboard(period) {
+  const data = getData();
+  const today = todayStr();
+  const spanDays = PERIOD_DAY_SPANS[period] || 7;
+  const windowDays = new Set();
+  for (let i = 0; i < spanDays; i++) windowDays.add(addDays(today, -i));
+
+  const rows = Object.keys(data.kids).map((name) => {
+    const kidRecord = data.kids[name];
+    let count = 0;
+    for (const lang of ["en", "de"]) {
+      const days = (kidRecord[lang] && kidRecord[lang].days) || {};
+      for (const d of Object.keys(days)) {
+        if (windowDays.has(d)) count += days[d] || 0;
+      }
+    }
+    return { name, count, emoji: kidEmojiFor(kidRecord, name) };
+  });
+  rows.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  return rows;
+}
+
+const RANK_MEDALS = ["🥇", "🥈", "🥉"];
+
+function renderLeaderboard() {
+  const rows = computeLeaderboard(state.leaderboardPeriod);
+  $("leaderboard-list").innerHTML = rows.map((r, i) => `
+    <div class="leaderboard-row${r.name === state.currentKid ? " current" : ""}">
+      <div class="leaderboard-rank">${RANK_MEDALS[i] || String(i + 1)}</div>
+      <div class="leaderboard-avatar">${r.emoji}</div>
+      <div class="leaderboard-name">${escapeHtml(r.name)}</div>
+      <div class="leaderboard-count">${escapeHtml(t("wordsCount", r.count))}</div>
+    </div>
+  `).join("");
+}
+
+$("btn-leaderboard").addEventListener("click", () => showScreen("screen-leaderboard"));
+$("btn-leaderboard-back").addEventListener("click", () => showScreen("screen-home"));
 
 // ------------------- init -------------------
 

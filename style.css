@@ -333,6 +333,7 @@ button { cursor: pointer; }
   justify-content: space-between;
   margin-bottom: 1rem;
 }
+.home-topbar-left { display: flex; align-items: center; gap: 0.5rem; }
 
 #home-greeting { margin-top: 0.25rem; }
 
@@ -724,6 +725,33 @@ button { cursor: pointer; }
 .confirm-box p { font-weight: 800; margin-bottom: 0.6rem; }
 .confirm-actions { display: flex; gap: 0.6rem; }
 .confirm-actions .btn { flex: 1; }
+
+/* ---------------- Leaderboard ---------------- */
+
+#period-picker { margin-bottom: 1.25rem; }
+
+.leaderboard-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.leaderboard-row {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.leaderboard-row.current { outline: 3px solid var(--sage); }
+.leaderboard-rank {
+  font-size: 1.1rem;
+  font-weight: 900;
+  width: 1.8rem;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--ink-dim);
+}
+.leaderboard-avatar { font-size: 1.6rem; flex-shrink: 0; }
+.leaderboard-name { font-weight: 800; flex: 1; }
+.leaderboard-count { font-weight: 800; color: var(--ink-dim); white-space: nowrap; }
 
 /* ---------------- Toast ---------------- */
 
