@@ -1496,10 +1496,12 @@ function renderWeeklyChart(langData, today, goal) {
     const isToday = d === today;
     return `
       <div class="weekly-bar-col${isToday ? " is-today" : ""}">
-        <div class="weekly-bar-count">${count}</div>
         <div class="weekly-bar-track" style="height:${maxTrackPx}px" title="${escapeHtml(t("wordsCount", count))}">
-          <div class="weekly-bar-fill" style="height:${px}px"></div>
-          <div class="weekly-bar-goal-line" style="bottom:${GOAL_BAR_PX}px"></div>
+          <div class="weekly-bar-count" style="bottom:${px + 4}px">${count}</div>
+          <div class="weekly-bar-visual">
+            <div class="weekly-bar-fill" style="height:${px}px"></div>
+            <div class="weekly-bar-goal-line" style="bottom:${GOAL_BAR_PX}px"></div>
+          </div>
         </div>
         <div class="weekly-bar-daylabel">${weekday}</div>
       </div>

@@ -442,10 +442,19 @@ button { cursor: pointer; }
   gap: 0.3rem;
   flex: 1;
 }
+/* Positioning context only — NOT clipped, so the count label (which tracks
+   the fill's own height) can sit right above a near-zero bar without being
+   cut off by the rounded-corner mask below. */
 .weekly-bar-track {
   width: 100%;
   max-width: 26px;
   position: relative;
+}
+/* The rounded, clipped visual bar itself — separate from .weekly-bar-track
+   so clipping never affects the count label. */
+.weekly-bar-visual {
+  position: absolute;
+  inset: 0;
   border-radius: 6px;
   overflow: hidden;
   background: var(--border);
@@ -468,7 +477,19 @@ button { cursor: pointer; }
   background: var(--ink-dim);
   opacity: 0.45;
 }
-.weekly-bar-count { font-size: 0.75rem; font-weight: 400; color: var(--ink-dim); min-height: 1em; }
+/* Sits just above the top of its own bar (bottom offset = fill height + a
+   few px) so a zero-count day's "0" rests almost on the day label below,
+   instead of floating at a fixed height unrelated to the actual count. */
+.weekly-bar-count {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ink-dim);
+  white-space: nowrap;
+  transition: bottom 0.3s ease;
+}
 .weekly-bar-col.is-today .weekly-bar-count { font-weight: 800; color: var(--sage-deep); }
 .weekly-bar-daylabel { font-size: 0.7rem; font-weight: 400; color: var(--ink-dim); }
 .weekly-bar-col.is-today .weekly-bar-daylabel { font-weight: 800; color: var(--ink); }
