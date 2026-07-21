@@ -149,15 +149,15 @@
       "en": {
         "words": {
           "and": {
-            "level": 2,
-            "correct": 3,
+            "level": 3,
+            "correct": 4,
             "wrong": 2,
             "lastSeen": "2026-07-20",
-            "nextDue": "2026-07-23"
+            "nextDue": "2026-07-27"
           }
         },
         "days": {
-          "2026-07-20": 5
+          "2026-07-20": 6
         }
       },
       "de": {
