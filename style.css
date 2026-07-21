@@ -396,18 +396,6 @@ button { cursor: pointer; }
   justify-content: space-between;
 }
 .weekly-chart-title { font-weight: 800; font-size: 0.9rem; color: var(--ink-dim); }
-.weekly-legend { display: flex; gap: 0.7rem; }
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--ink-dim);
-}
-.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.legend-dot-seen { background: var(--powder); }
-.legend-dot-mastered { background: var(--sage); }
 
 .weekly-chart {
   display: flex;
@@ -432,8 +420,9 @@ button { cursor: pointer; }
   overflow: hidden;
   background: var(--border);
 }
-.weekly-bar-seen { width: 100%; background: var(--powder); }
-.weekly-bar-mastered { width: 100%; background: var(--sage); }
+.weekly-bar-fill { width: 100%; background: var(--sage); }
+.weekly-bar-count { font-size: 0.75rem; font-weight: 800; color: var(--ink-dim); min-height: 1em; }
+.weekly-bar-col.is-today .weekly-bar-count { color: var(--sage-deep); }
 .weekly-bar-daylabel { font-size: 0.7rem; font-weight: 800; color: var(--ink-dim); }
 .weekly-bar-col.is-today .weekly-bar-daylabel { color: var(--ink); }
 
@@ -728,7 +717,20 @@ button { cursor: pointer; }
 
 /* ---------------- Leaderboard ---------------- */
 
-#period-picker { margin-bottom: 1.25rem; }
+/* 5 options must fit on one line even on the narrowest iPhone — denser
+   sizing than the 2-3-option reading-level pickers that share .level-btn. */
+#period-picker {
+  margin-bottom: 1.25rem;
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+}
+#period-picker .level-btn {
+  flex: 1;
+  padding: 0.5rem 0.2rem;
+  font-size: 0.72rem;
+  min-height: 40px;
+  white-space: nowrap;
+}
 
 .leaderboard-list { display: flex; flex-direction: column; gap: 0.6rem; }
 .leaderboard-row {

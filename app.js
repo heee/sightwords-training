@@ -182,7 +182,6 @@ const T = {
     goalExceeded: (n) => `Goal smashed — ${n} extra! 🌟`,
     toGo: (n) => `${n} to go!`,
     last7Days: "Last 7 days",
-    weeklyTooltip: (seen, mastered) => `${seen} new · ${mastered} mastered`,
     leaderboard: "Leaderboard",
     periodDay: "Day",
     periodWeek: "Week",
@@ -266,7 +265,6 @@ const T = {
     goalExceeded: (n) => `Ziel übertroffen — ${n} extra! 🌟`,
     toGo: (n) => `Noch ${n}!`,
     last7Days: "Letzte 7 Tage",
-    weeklyTooltip: (seen, mastered) => `${seen} neu · ${mastered} gemeistert`,
     leaderboard: "Bestenliste",
     periodDay: "Tag",
     periodWeek: "Woche",
@@ -358,8 +356,6 @@ function applyStaticTranslations() {
   $("btn-open-settings").title = t("settings");
   $("btn-start-practice").textContent = t("startPractice");
   $("weekly-chart-title").textContent = t("last7Days");
-  $("legend-seen-label").textContent = t("levelNew");
-  $("legend-mastered-label").textContent = t("levelMastered");
   $("btn-leaderboard").setAttribute("aria-label", t("leaderboard"));
   $("btn-leaderboard").title = t("leaderboard");
   $("leaderboard-heading").textContent = t("leaderboard");
@@ -1414,39 +1410,29 @@ function renderHome() {
   renderWeeklyChart(langData, today);
 }
 
-// Split bar chart of the last 7 days (oldest to newest, ending today):
-// each day's bar is split into new words first seen that day (bottom,
-// powder) and words that first reached Mastered that day (top, sage).
+// Bar chart of the last 7 days (oldest to newest, ending today): each bar's
+// height and the number above it are the count of words practiced that day
+// in the currently selected language (langData.days) — the same per-day
+// counter driving the streak and daily-goal bar elsewhere on this screen.
 function renderWeeklyChart(langData, today) {
-  const words = langData.words || {};
   const days = [];
   for (let i = 6; i >= 0; i--) days.push(addDays(today, -i));
 
-  const seenByDay = {};
-  const masteredByDay = {};
-  for (const d of days) { seenByDay[d] = 0; masteredByDay[d] = 0; }
-  for (const entry of Object.values(words)) {
-    if (entry.firstSeen && seenByDay[entry.firstSeen] !== undefined) seenByDay[entry.firstSeen]++;
-    if (entry.masteredOn && masteredByDay[entry.masteredOn] !== undefined) masteredByDay[entry.masteredOn]++;
-  }
-
-  const totals = days.map((d) => seenByDay[d] + masteredByDay[d]);
-  const scaleMax = Math.max(5, ...totals);
+  const counts = days.map((d) => langData.days[d] || 0);
+  const scaleMax = Math.max(5, ...counts);
   const maxBarPx = 56;
 
-  $("weekly-chart").innerHTML = days.map((d) => {
-    const seen = seenByDay[d];
-    const mastered = masteredByDay[d];
-    const seenPx = Math.round((seen / scaleMax) * maxBarPx);
-    const masteredPx = Math.round((mastered / scaleMax) * maxBarPx);
+  $("weekly-chart").innerHTML = days.map((d, i) => {
+    const count = counts[i];
+    const px = Math.round((count / scaleMax) * maxBarPx);
     const [y, m, dd] = d.split("-").map(Number);
     const weekday = WEEKDAY_LABELS[state.lang][new Date(y, m - 1, dd).getDay()];
     const isToday = d === today;
     return `
       <div class="weekly-bar-col${isToday ? " is-today" : ""}">
-        <div class="weekly-bar-track" title="${escapeHtml(t("weeklyTooltip", seen, mastered))}">
-          <div class="weekly-bar-seen" style="height:${seenPx}px"></div>
-          <div class="weekly-bar-mastered" style="height:${masteredPx}px"></div>
+        <div class="weekly-bar-count">${count}</div>
+        <div class="weekly-bar-track" title="${escapeHtml(t("wordsCount", count))}">
+          <div class="weekly-bar-fill" style="height:${px}px"></div>
         </div>
         <div class="weekly-bar-daylabel">${weekday}</div>
       </div>
@@ -1824,9 +1810,9 @@ $("period-picker").addEventListener("click", (e) => {
   renderLeaderboard();
 });
 
-// Total words practiced per kid across BOTH languages combined (a kid who
-// splits practice between English and German gets credit for all of it),
-// within the trailing window for the selected period.
+// Total words practiced per kid in the CURRENTLY SELECTED language only
+// (matches every other per-kid stat on Home, which is also scoped to
+// state.lang), within the trailing window for the selected period.
 function computeLeaderboard(period) {
   const data = getData();
   const today = todayStr();
@@ -1836,12 +1822,10 @@ function computeLeaderboard(period) {
 
   const rows = Object.keys(data.kids).map((name) => {
     const kidRecord = data.kids[name];
+    const days = (kidRecord[state.lang] && kidRecord[state.lang].days) || {};
     let count = 0;
-    for (const lang of ["en", "de"]) {
-      const days = (kidRecord[lang] && kidRecord[lang].days) || {};
-      for (const d of Object.keys(days)) {
-        if (windowDays.has(d)) count += days[d] || 0;
-      }
+    for (const d of Object.keys(days)) {
+      if (windowDays.has(d)) count += days[d] || 0;
     }
     return { name, count, emoji: kidEmojiFor(kidRecord, name) };
   });
