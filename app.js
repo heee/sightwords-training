@@ -232,6 +232,7 @@ const T = {
     notQuite: "Not quite!",
     noSpeechHeard: "I didn't hear you — try again!",
     hearWord: "🔊 Hear the word",
+    markCorrect: "✅ I said it right!",
     next: "Next ▸",
     skip: "Skip ▸",
     endSession: "End session",
@@ -319,6 +320,7 @@ const T = {
     notQuite: "Nicht ganz!",
     noSpeechHeard: "Ich habe dich nicht gehört — versuch's nochmal!",
     hearWord: "🔊 Wort anhören",
+    markCorrect: "✅ Ich hab's richtig gesagt!",
     next: "Weiter ▸",
     skip: "Überspringen ▸",
     endSession: "Sitzung beenden",
@@ -404,6 +406,7 @@ function applyStaticTranslations() {
   $("speech-unsupported-banner").textContent = t("speechUnsupported");
   $("btn-mic").setAttribute("aria-label", t("tapToListen"));
   $("btn-hear-word").textContent = t("hearWord");
+  $("btn-mark-correct").textContent = t("markCorrect");
   $("btn-next-word").textContent = t("next");
   $("btn-skip").textContent = t("skip");
   $("btn-end-session").textContent = t("endSession");
@@ -1534,8 +1537,15 @@ function renderPracticeWord() {
   $("practice-prompt").textContent = t("whatWord");
   $("mic-status").textContent = (cloudModeActive() || speechSupported) ? t("tapToListen") : "";
   $("feedback-wrong").classList.add("hidden");
+  updateMicWrongState(false);
+  state.session.lastWrongWord = null;
+  state.session.lastWrongPriorEntry = null;
   clearTimeout(state.autoAdvanceTimer);
   updatePracticeProgress();
+}
+
+function updateMicWrongState(wrong) {
+  $("btn-mic").classList.toggle("was-wrong", wrong);
 }
 
 function updatePracticeProgress() {
@@ -1601,10 +1611,69 @@ function handleCorrect() {
 
 function handleWrong() {
   const word = currentWord();
+  const s = state.session;
+  if (s) {
+    // Snapshot the word's entry BEFORE this wrong attempt mutates it, so
+    // "I said it right!" can restore from here rather than algebraically
+    // reversing the level/counter changes recordAnswer is about to make.
+    const priorData = getData();
+    const priorLangData = priorData.kids[s.kid] && priorData.kids[s.kid][s.lang];
+    s.lastWrongWord = word;
+    s.lastWrongPriorEntry = (priorLangData && priorLangData.words[word]) || null;
+  }
   recordAnswer(word, false);
   shakeWord();
   $("mic-status").textContent = t("notQuite");
+  updateMicWrongState(true);
   $("feedback-wrong").classList.remove("hidden");
+}
+
+// Corrects a wrong recording when the child actually said the word right
+// but speech recognition missed it. Restores the word's PRE-attempt
+// snapshot and applies a fresh correct answer on top of it, rather than
+// stacking a correction on top of the wrong one — so the net effect on
+// level/correct/wrong counters is as if this attempt was simply correct
+// from the start, not "wrong then also correct".
+function overridePreviousAnswerAsCorrect() {
+  const s = state.session;
+  const word = s.lastWrongWord;
+  if (!word) return;
+  const data = getData();
+  const langData = data.kids[s.kid][s.lang];
+  const newEntry = applyAnswer(s.lastWrongPriorEntry, true, s.today);
+  langData.words[word] = newEntry;
+  s.wordUpdates[word] = newEntry;
+  s.correctCount++;
+  setData(data);
+
+  queueOp({
+    type: "progress",
+    key: `progress:${s.kid}:${s.lang}`,
+    payload: { kid: s.kid, lang: s.lang, words: { ...s.wordUpdates }, day: s.today, dayCount: s.dayCountBase + s.practicedCount },
+  });
+
+  // The wrong answer queued a same-session second try for this word —
+  // no longer needed now that we know it was actually right.
+  if (s.requeued.has(word)) {
+    const idx = s.queue.lastIndexOf(word);
+    if (idx > s.index) s.queue.splice(idx, 1);
+    s.requeued.delete(word);
+  }
+  s.lastWrongWord = null;
+  s.lastWrongPriorEntry = null;
+}
+
+function handleMarkCorrect() {
+  const s = state.session;
+  if (!s || !s.lastWrongWord) return;
+  overridePreviousAnswerAsCorrect();
+  clearTimeout(state.autoAdvanceTimer);
+  $("feedback-wrong").classList.add("hidden");
+  updateMicWrongState(false);
+  playChime();
+  burstConfetti($("confetti-layer"));
+  $("mic-status").textContent = t("correctCheer");
+  state.autoAdvanceTimer = setTimeout(() => { advanceSessionAndRender(); }, 1200);
 }
 
 $("btn-mic").addEventListener("click", () => {
@@ -1612,21 +1681,27 @@ $("btn-mic").addEventListener("click", () => {
   if (cloudModeActive()) {
     if (state.micBusy) return; // "Thinking…" — ignore taps until the request settles
     $("feedback-wrong").classList.add("hidden");
+    updateMicWrongState(false);
     clearTimeout(state.autoAdvanceTimer);
     startCloudListening();
     return;
   }
   if (!speechSupported || state.recognizing) return;
   $("feedback-wrong").classList.add("hidden");
+  updateMicWrongState(false);
   clearTimeout(state.autoAdvanceTimer);
   startListening();
 });
 
 $("btn-hear-word").addEventListener("click", () => {
   if (!state.session) return;
+  // No auto-advance: the child should be free to hear it again, retry via
+  // the mic, mark it correct, or move on — whichever fits.
   speakWord(currentWord(), state.session.lang);
-  clearTimeout(state.autoAdvanceTimer);
-  state.autoAdvanceTimer = setTimeout(() => { advanceSessionAndRender(); }, 1500);
+});
+
+$("btn-mark-correct").addEventListener("click", () => {
+  handleMarkCorrect();
 });
 
 $("btn-next-word").addEventListener("click", () => {

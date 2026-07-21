@@ -602,6 +602,11 @@ button { cursor: pointer; }
 .mic-btn.listening {
   animation: pulse 1.1s ease-in-out infinite;
 }
+/* Visual cue that the last attempt on this word came back wrong — cleared
+   the moment they retry, mark it correct, or move to the next word. */
+.mic-btn.was-wrong {
+  background: linear-gradient(135deg, var(--rose), color-mix(in srgb, var(--rose) 45%, var(--card)));
+}
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sage) 55%, transparent), var(--shadow-lg); }
   50% { box-shadow: 0 0 0 18px color-mix(in srgb, var(--sage) 0%, transparent), var(--shadow-lg); }
@@ -615,11 +620,12 @@ button { cursor: pointer; }
 
 .feedback-wrong {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.7rem;
   justify-content: center;
   padding-bottom: 0.5rem;
 }
-.feedback-wrong .btn { flex: 1; max-width: 220px; }
+.feedback-wrong .btn { flex: 1 1 140px; max-width: 220px; }
 
 .btn-skip {
   background: none;
