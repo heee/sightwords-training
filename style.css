@@ -310,27 +310,34 @@ button { cursor: pointer; }
 
 .kid-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.9rem;
+  /* Column count derives from available width instead of fixed per-
+     breakpoint counts: auto-fill can never make the grid wider than its
+     container (the 1fr max caps every track), so cards can't bleed past
+     the screen edges no matter the viewport or name length — and wider
+     screens automatically fit more kids per row. */
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.7rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .kid-card {
   background: var(--card);
   border: none;
   border-radius: var(--radius);
-  padding: 1.4rem 0.8rem;
+  padding: 1rem 0.6rem;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  min-height: 120px;
+  gap: 0.4rem;
+  min-height: 104px;
   min-width: 0; /* let the grid track shrink below the name's min-content width */
   transition: transform 0.15s ease;
 }
 .kid-card:active { transform: scale(0.95); }
-.kid-card.selected { outline: 3px solid var(--sage); }
-.kid-card .kid-avatar { font-size: 2.2rem; }
+.kid-card.selected { outline: 3px solid var(--sage); outline-offset: -3px; }
+.kid-card .kid-avatar { font-size: 2rem; }
 .kid-card .kid-name { font-weight: 800; text-align: center; overflow-wrap: anywhere; }
 
 .kid-card.new-kid-card {
@@ -807,7 +814,6 @@ button { cursor: pointer; }
 @media (min-width: 700px) {
   #app { max-width: 720px; }
   .screen { padding: 2.25rem 2.5rem 2.5rem; }
-  .kid-list { grid-template-columns: repeat(3, 1fr); }
   .practice-word { font-size: clamp(3.5rem, 12vw, 8rem); }
   .mic-btn { width: 7.5rem; height: 7.5rem; }
   .mic-btn .mic-emoji { font-size: 3rem; }

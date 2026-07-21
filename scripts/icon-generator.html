@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sight Words — icon generator</title>
+</head>
+<body>
+<!--
+  Regenerates the PWA icons: the fox emoji on the streak-card gradient
+  (135deg, color-mix(ochre 35%, card) -> card). Replaces the old Node
+  script — emoji can only be rendered where a color emoji font exists,
+  i.e. in a browser, not in bare Node.
+
+  Usage: open this file in any browser; it renders previews and a
+  download link per size. Save the files into ../icons/ with the shown
+  names. Note the emoji artwork follows the OS you generate on.
+-->
+<p>Right-click each image (or use the links) and save into <code>icons/</code>:</p>
+<div id="out"></div>
+<script>
+  const SIZES = [[192, "icon-192.png"], [512, "icon-512.png"], [180, "apple-touch-icon.png"]];
+  for (const [size, name] of SIZES) {
+    const c = document.createElement("canvas");
+    c.width = size; c.height = size;
+    const ctx = c.getContext("2d");
+    const g = ctx.createLinearGradient(0, 0, size, size);
+    g.addColorStop(0, "#F6E8CC"); // color-mix(in srgb, ochre #E5C078 35%, card #FFFDF9)
+    g.addColorStop(1, "#FFFDF9");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+    ctx.font = `${Math.round(size * 0.62)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🦊", size / 2, size / 2 + size * 0.04);
+
+    const wrap = document.createElement("div");
+    const img = new Image();
+    img.src = c.toDataURL("image/png");
+    img.width = 96; img.height = 96;
+    img.style.border = "1px solid #ccc";
+    const a = document.createElement("a");
+    a.href = img.src;
+    a.download = name;
+    a.textContent = `Download ${name} (${size}×${size})`;
+    wrap.append(img, document.createTextNode(" "), a);
+    document.getElementById("out").append(wrap);
+  }
+</script>
+</body>
+</html>
