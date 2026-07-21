@@ -445,14 +445,29 @@ button { cursor: pointer; }
 .weekly-bar-track {
   width: 100%;
   max-width: 26px;
-  height: 56px;
-  display: flex;
-  flex-direction: column-reverse;
+  position: relative;
   border-radius: 6px;
   overflow: hidden;
   background: var(--border);
 }
-.weekly-bar-fill { width: 100%; background: var(--sage); }
+.weekly-bar-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--sage);
+  transition: height 0.3s ease;
+}
+/* Marks the "goal reached exactly" reference height (GOAL_BAR_PX in app.js)
+   so a bar growing past it visibly reads as "exceeded today's goal". */
+.weekly-bar-goal-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ink-dim);
+  opacity: 0.45;
+}
 .weekly-bar-count { font-size: 0.75rem; font-weight: 400; color: var(--ink-dim); min-height: 1em; }
 .weekly-bar-col.is-today .weekly-bar-count { font-weight: 800; color: var(--sage-deep); }
 .weekly-bar-daylabel { font-size: 0.7rem; font-weight: 400; color: var(--ink-dim); }
