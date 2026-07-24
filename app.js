@@ -887,6 +887,16 @@ const DE_EQUIV_GROUPS = [
 
 const EQUIV = { en: buildEquivalence(EN_EQUIV_GROUPS), de: buildEquivalence(DE_EQUIV_GROUPS) };
 
+// Every word in each language's full list, normalized — used below to stop
+// fuzzy matching from ever landing on a DIFFERENT real lesson word (e.g.
+// "der"/"die", "small"/"shall" are each one Levenshtein edit apart, but
+// they're different words the kid is specifically learning to tell apart,
+// not ASR noise to forgive).
+const WORD_SET_BY_LANG = {
+  en: new Set(WORDS.en.map((w) => normalizeTranscript(w))),
+  de: new Set(WORDS.de.map((w) => normalizeTranscript(w))),
+};
+
 // Generous, 5-year-old-friendly matching: exact match, homophone/digit
 // equivalence, umlaut-folded match (German), or Levenshtein <=1 for longer
 // target words — checked against the whole transcript AND each individual
@@ -902,7 +912,12 @@ function isMatch(alternatives, targetWord, lang) {
     if (EQUIV[lang].find(tok) === targetCanon) return true;
     const tokFold = lang === "de" ? foldGerman(tok) : tok;
     if (tokFold === targetFold) return true;
-    if (targetNorm.length >= 4 && levenshtein(tok, targetNorm) <= 1) return true;
+    // Fuzzy (mis-transcription) tolerance down to 3-letter targets — this
+    // is where the shortest, highest-frequency, hardest-for-ASR words live
+    // (der, die, mit, ist, an...). Excluded whenever the near-match is
+    // ITSELF a different real word in the list: that's a different lesson
+    // word, not noise, and should still count wrong.
+    if (targetNorm.length >= 3 && !WORD_SET_BY_LANG[lang].has(tok) && levenshtein(tok, targetNorm) <= 1) return true;
     return false;
   }
 
