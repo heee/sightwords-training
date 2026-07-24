@@ -140,81 +140,106 @@
       "de": {
         "words": {
           "der": {
-            "level": 0,
-            "correct": 4,
-            "wrong": 8,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-21",
+            "level": 1,
+            "correct": 5,
+            "wrong": 9,
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-25",
             "firstSeen": "2026-07-21"
           },
           "die": {
             "level": 0,
             "correct": 3,
-            "wrong": 10,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-21",
+            "wrong": 12,
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-24",
             "firstSeen": "2026-07-21"
           },
           "das": {
             "level": 3,
-            "correct": 7,
+            "correct": 8,
             "wrong": 1,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-28",
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-31",
             "firstSeen": "2026-07-21"
           },
           "und": {
             "level": 3,
-            "correct": 6,
+            "correct": 7,
             "wrong": 0,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-28",
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-31",
             "firstSeen": "2026-07-21"
           },
           "ich": {
             "level": 3,
-            "correct": 6,
+            "correct": 7,
             "wrong": 2,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-28",
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-31",
             "firstSeen": "2026-07-21"
           },
           "du": {
             "level": 2,
-            "correct": 6,
-            "wrong": 3,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-24",
+            "correct": 7,
+            "wrong": 4,
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-27",
             "firstSeen": "2026-07-21"
           },
           "ist": {
-            "level": 2,
+            "level": 0,
             "correct": 2,
-            "wrong": 2,
-            "lastSeen": "2026-07-21",
+            "wrong": 5,
+            "lastSeen": "2026-07-24",
             "nextDue": "2026-07-24",
             "firstSeen": "2026-07-21"
           },
           "mit": {
             "level": 0,
             "correct": 0,
-            "wrong": 6,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-21",
+            "wrong": 9,
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-24",
             "firstSeen": "2026-07-21"
           },
           "auf": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
-            "lastSeen": "2026-07-21",
-            "nextDue": "2026-07-24",
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-31",
             "firstSeen": "2026-07-21"
+          },
+          "ein": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-25",
+            "firstSeen": "2026-07-24"
+          },
+          "eine": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-25",
+            "firstSeen": "2026-07-24"
+          },
+          "nicht": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-24",
+            "nextDue": "2026-07-25",
+            "firstSeen": "2026-07-24"
           }
         },
         "days": {
           "2026-07-20": 41,
-          "2026-07-21": 34
+          "2026-07-21": 34,
+          "2026-07-24": 19
         }
       },
       "emoji": "🐨"
