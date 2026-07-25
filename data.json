@@ -13,7 +13,7 @@
         "words": {
           "a": {
             "level": 3,
-            "correct": 7,
+            "correct": 8,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -22,7 +22,7 @@
           },
           "away": {
             "level": 3,
-            "correct": 7,
+            "correct": 8,
             "wrong": 1,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -31,7 +31,7 @@
           },
           "and": {
             "level": 3,
-            "correct": 7,
+            "correct": 8,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -40,7 +40,7 @@
           },
           "big": {
             "level": 3,
-            "correct": 7,
+            "correct": 8,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -49,7 +49,7 @@
           },
           "blue": {
             "level": 3,
-            "correct": 6,
+            "correct": 7,
             "wrong": 2,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -58,7 +58,7 @@
           },
           "after": {
             "level": 3,
-            "correct": 7,
+            "correct": 8,
             "wrong": 1,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -67,7 +67,7 @@
           },
           "again": {
             "level": 3,
-            "correct": 6,
+            "correct": 7,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -75,16 +75,17 @@
             "masteredOn": "2026-07-25"
           },
           "an": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 11,
             "lastSeen": "2026-07-25",
-            "nextDue": "2026-07-28",
-            "firstSeen": "2026-07-21"
+            "nextDue": "2026-08-01",
+            "firstSeen": "2026-07-21",
+            "masteredOn": "2026-07-25"
           },
           "always": {
             "level": 3,
-            "correct": 6,
+            "correct": 7,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -93,7 +94,7 @@
           },
           "around": {
             "level": 3,
-            "correct": 6,
+            "correct": 7,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -102,7 +103,7 @@
           },
           "because": {
             "level": 3,
-            "correct": 4,
+            "correct": 5,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -111,7 +112,7 @@
           },
           "been": {
             "level": 3,
-            "correct": 3,
+            "correct": 4,
             "wrong": 5,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -120,7 +121,7 @@
           },
           "before": {
             "level": 3,
-            "correct": 4,
+            "correct": 5,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -129,7 +130,7 @@
           },
           "best": {
             "level": 3,
-            "correct": 3,
+            "correct": 4,
             "wrong": 0,
             "lastSeen": "2026-07-25",
             "nextDue": "2026-08-01",
@@ -146,20 +147,22 @@
             "masteredOn": "2026-07-25"
           },
           "buy": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
             "lastSeen": "2026-07-25",
-            "nextDue": "2026-07-28",
-            "firstSeen": "2026-07-25"
+            "nextDue": "2026-08-01",
+            "firstSeen": "2026-07-25",
+            "masteredOn": "2026-07-25"
           },
           "call": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
             "lastSeen": "2026-07-25",
-            "nextDue": "2026-07-28",
-            "firstSeen": "2026-07-25"
+            "nextDue": "2026-08-01",
+            "firstSeen": "2026-07-25",
+            "masteredOn": "2026-07-25"
           },
           "cold": {
             "level": 3,
@@ -174,7 +177,7 @@
         "days": {
           "2026-07-20": 32,
           "2026-07-21": 36,
-          "2026-07-25": 38
+          "2026-07-25": 54
         }
       },
       "de": {
