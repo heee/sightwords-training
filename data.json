@@ -175,11 +175,11 @@
             "masteredOn": "2026-07-25"
           },
           "does": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-26",
-            "nextDue": "2026-07-27",
+            "nextDue": "2026-07-29",
             "firstSeen": "2026-07-26"
           },
           "don't": {
@@ -205,13 +205,29 @@
             "lastSeen": "2026-07-26",
             "nextDue": "2026-07-27",
             "firstSeen": "2026-07-26"
+          },
+          "special": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-26",
+            "nextDue": "2026-07-27",
+            "firstSeen": "2026-07-26"
+          },
+          "notice": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-26",
+            "nextDue": "2026-07-27",
+            "firstSeen": "2026-07-26"
           }
         },
         "days": {
           "2026-07-20": 32,
           "2026-07-21": 36,
           "2026-07-25": 54,
-          "2026-07-26": 21
+          "2026-07-26": 24
         }
       },
       "de": {
