@@ -10,10 +10,14 @@
 //                               days[day] = max(existing, dayCount). Creates the kid if missing.
 //   POST /register-kid   -> { kid } -> creates an empty kid record with default settings if absent
 //   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay,
-//                              levels: { en: "prek"|"g1"|"g23", de: "prek"|"k1"|"k2" } }, rename?, emoji? }
+//                              levels: { en: "prek"|"g1"|"g23"|"g4"|"g5"|"g6",
+//                                        de: "prek"|"k1"|"k2"|"k3"|"k4"|"k5"|"k6" },
+//                              germanEnabled?: boolean }, rename?, emoji? }
 //                            -> clamps ranges (5-50, 0-10); invalid/missing levels fall back to
-//                               defaults ("prek"/"k1"); rename moves the whole kid record;
-//                               emoji must be one of KID_EMOJIS or it's ignored
+//                               defaults ("prek"/"prek"); rename moves the whole kid record;
+//                               emoji must be one of KID_EMOJIS or it's ignored; germanEnabled
+//                               is optional — persisted only if it's actually a boolean, any
+//                               other type (missing, string, number...) is ignored/not persisted
 //   POST /reset-kid      -> { kid } -> clears en/de progress + days, keeps kid + settings
 //   POST /delete-kid     -> { kid } -> removes kid entirely
 //   POST /transcribe?lang=en|de -> body: raw audio bytes (Content-Type: audio/mp4 |
@@ -47,7 +51,10 @@ const MAX_WORDS_PER_SESSION = 50;
 const MIN_WORDS_PER_SESSION = 5;
 const MAX_NEW_WORDS_PER_DAY = 10;
 const MIN_NEW_WORDS_PER_DAY = 0;
-const VALID_LEVELS = { en: ["prek", "g1", "g23"], de: ["prek", "k1", "k2"] };
+const VALID_LEVELS = {
+  en: ["prek", "g1", "g23", "g4", "g5", "g6"],
+  de: ["prek", "k1", "k2", "k3", "k4", "k5", "k6"],
+};
 
 function emptyKid() {
   return {
@@ -140,11 +147,16 @@ export default {
       const levelEn = VALID_LEVELS.en.includes(body?.settings?.levels?.en) ? body.settings.levels.en : DEFAULT_SETTINGS.levels.en;
       const levelDe = VALID_LEVELS.de.includes(body?.settings?.levels?.de) ? body.settings.levels.de : DEFAULT_SETTINGS.levels.de;
       const emoji = KID_EMOJIS.includes(body?.emoji) ? body.emoji : "";
+      // Optional — any other type (missing, string, number, etc.) is simply
+      // ignored (not persisted), same as the default/unset state.
+      const germanEnabledProvided = typeof body?.settings?.germanEnabled === "boolean";
 
       try {
         await commitMutation(env, (data) => {
           if (!data.kids[kid]) data.kids[kid] = emptyKid();
-          data.kids[kid].settings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe } };
+          const newSettings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe } };
+          if (germanEnabledProvided) newSettings.germanEnabled = body.settings.germanEnabled;
+          data.kids[kid].settings = newSettings;
           if (emoji) data.kids[kid].emoji = emoji;
           if (rename && rename !== kid) {
             data.kids[rename] = data.kids[kid];

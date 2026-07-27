@@ -162,6 +162,12 @@
       <p id="avatar-progress-text" class="settings-hint">0 words mastered combined</p>
       <div id="emoji-picker" class="emoji-picker"></div>
 
+      <label id="label-enable-german" class="field-label">🇩🇪 Enable German</label>
+      <div id="german-toggle" class="lang-toggle" role="tablist">
+        <button type="button" id="german-toggle-off" class="lang-btn german-toggle-btn active" data-german="off">Off</button>
+        <button type="button" id="german-toggle-on" class="lang-btn german-toggle-btn" data-german="on">On</button>
+      </div>
+
       <label id="label-kid-name" class="field-label">Kid's name</label>
       <input id="settings-kid-name" class="text-input" type="text" maxlength="40">
 
@@ -174,8 +180,10 @@
       <label id="label-level-en" class="field-label">Reading level 🇺🇸</label>
       <div id="level-picker-en" class="level-picker" role="tablist"></div>
 
-      <label id="label-level-de" class="field-label">Reading level 🇩🇪</label>
-      <div id="level-picker-de" class="level-picker" role="tablist"></div>
+      <div id="german-level-block" class="hidden">
+        <label id="label-level-de" class="field-label">Reading level 🇩🇪</label>
+        <div id="level-picker-de" class="level-picker" role="tablist"></div>
+      </div>
 
       <button id="btn-settings-save" type="button" class="btn btn-primary btn-large">Save settings</button>
     </div>

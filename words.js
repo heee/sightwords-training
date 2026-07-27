@@ -56,6 +56,33 @@ const WORDS = {
     "robin", "Santa Claus", "school", "seed", "sheep", "shoe", "sister", "snow", "song", "squirrel",
     "stick", "street", "sun", "table", "thing", "time", "top", "toy", "tree", "watch",
     "water", "way", "wind", "window", "wood",
+    // Grade 4 band (72 words) — later-elementary informational/academic
+    // vocabulary, easiest-first (see LEVELS.en "g4").
+    "special", "notice", "increase", "material", "although", "consider", "several", "probably", "during", "perhaps",
+    "however", "either", "complete", "various", "common", "distance", "product", "method", "section", "direct",
+    "single", "effect", "general", "position", "force", "natural", "popular", "difficult", "sentence", "remember",
+    "important", "possible", "different", "especially", "system", "program", "example", "group", "area", "level",
+    "local", "major", "recent", "result", "simple", "study", "subject", "support", "surface", "total",
+    "value", "ready", "sense", "sound", "space", "spread", "stand", "state", "still", "strong",
+    "sure", "surprise", "tall", "teach", "term", "thick", "thin", "thought", "throughout", "trouble",
+    "usual", "wonder",
+    // Grade 5 band (74 words) — see LEVELS.en "g5".
+    "vary", "settle", "similar", "compare", "figure", "determine", "include", "indicate", "involve", "require",
+    "suggest", "describe", "explain", "discover", "discuss", "examine", "expect", "explore", "express", "identify",
+    "imagine", "improve", "inform", "instead", "instruct", "introduce", "locate", "measure", "mention", "observe",
+    "occur", "operate", "organize", "perform", "prepare", "present", "prevent", "produce", "protect", "provide",
+    "reduce", "refer", "relate", "remain", "removal", "repeat", "replace", "report", "review", "select",
+    "separate", "series", "situation", "solve", "source", "specific", "structure", "succeed", "suppose", "survive",
+    "adjust", "arrange", "attempt", "average", "avoid", "belong", "combine", "complain", "conclude", "contain",
+    "continue", "decide", "deliver", "depend",
+    // Grade 6 band (70 words) — see LEVELS.en "g6".
+    "represent", "recognize", "particular", "environment", "significant", "communicate", "accomplish", "accurate", "achieve", "acquire",
+    "adequate", "advantage", "analyze", "anticipate", "appreciate", "appropriate", "approximate", "assume", "assure", "authority",
+    "capable", "capacity", "circumstance", "combination", "component", "comprehend", "concept", "conclusion", "concrete", "conduct",
+    "confirm", "consequence", "considerable", "consist", "constant", "construct", "contribute", "convince", "cooperate", "coordinate",
+    "correspond", "criteria", "define", "demonstrate", "designate", "distinct", "distribute", "diverse", "domestic", "dominant",
+    "efficient", "eliminate", "emphasis", "encounter", "enormous", "essential", "establish", "estimate", "evaluate", "evident",
+    "evolve", "exceed", "exclude", "expand", "exceptional", "external", "extreme", "fundamental", "generate", "genuine",
   ],
 
   // ~200 common German first-reader sight words (Grundwortschatz Klasse 1/2
@@ -101,6 +128,40 @@ const WORDS = {
     "rechnen", "turnen", "basteln", "wandern", "träumen", "füttern",
     "zusammen", "vielleicht", "endlich", "sofort", "zuerst", "danach", "draußen", "drinnen", "oben", "unten",
     "links", "rechts", "gegen", "seit", "damit", "darum",
+    // Klasse-3 band (72 words) — later-elementary vocabulary continuing
+    // past Klasse-2, easiest-first (see LEVELS.de "k3").
+    "Verkehr", "Umwelt", "Abenteuer", "erklären", "Werkzeug", "Nachbar", "Feuerwehr", "Polizei", "Krankenhaus", "Apotheke",
+    "Bäckerei", "Supermarkt", "Bahnhof", "Flughafen", "Fabrik", "Büro", "Werkstatt", "Baustelle", "Brücke", "Turm",
+    "Burg", "Schloss", "Insel", "Berg", "Fluss", "See", "Meer", "Küste", "Wüste", "Dschungel",
+    "Höhle", "Feld", "Ernte", "Bauer", "Traktor", "Maschine", "Motor", "Reifen", "Bremse", "Kreuzung",
+    "Ampel", "Schild", "Landkarte", "Kompass", "Norden", "Süden", "Osten", "Westen", "Richtung", "Ausflug",
+    "Urlaub", "Koffer", "Zelt", "Rucksack", "Fernglas", "Taschenlampe", "Batterie", "Strom", "Energie", "Recycling",
+    "Müll", "sammeln", "entdecken", "bauen", "reparieren", "planen", "packen", "besuchen", "beobachten", "retten",
+    "schützen", "reisen",
+    // Klasse-4 band (69 words) — see LEVELS.de "k4".
+    "Gesellschaft", "Erfahrung", "vergleichen", "untersuchen", "Wissenschaft", "Experiment", "Ergebnis", "Beobachtung", "Erfindung", "Entdeckung",
+    "Bibliothek", "Zeitung", "Nachricht", "Information", "Meinung", "Vorschlag", "Entscheidung", "Lösung", "Aufgabe", "Projekt",
+    "Gruppe", "Klassenzimmer", "Unterricht", "Prüfung", "Note", "Zeugnis", "Wettbewerb", "Mannschaft", "Regel", "Ordnung",
+    "Sicherheit", "Gefahr", "Unfall", "Warnung", "Vorsicht", "Rücksicht", "Höflichkeit", "Respekt", "Streit", "Versöhnung",
+    "Freundschaft", "Vertrauen", "Geheimnis", "Überraschung", "Enttäuschung", "Aufregung", "Erwartung", "Hoffnung", "Neugier", "erforschen",
+    "beschreiben", "begründen", "vermuten", "behaupten", "bezweifeln", "bemerken", "erinnern", "vergessen", "verstehen", "begreifen",
+    "erfahren", "erleben", "gestalten", "entwickeln", "verändern", "verbessern", "wiederholen", "überprüfen", "feststellen",
+    // Klasse-5 band (70 words) — see LEVELS.de "k5".
+    "Kultur", "Tradition", "Vergangenheit", "Zukunft", "Gegenwart", "Jahrhundert", "Jahrzehnt", "Epoche", "Ereignis", "Entwicklung",
+    "Fortschritt", "Erfolg", "Misserfolg", "Herausforderung", "Fähigkeit", "Eigenschaft", "Charakter", "Persönlichkeit", "Verhalten", "Gewohnheit",
+    "Einstellung", "Ansicht", "Standpunkt", "Argument", "Beweis", "Behauptung", "Tatsache", "Wahrheit", "Wirklichkeit", "Vorstellung",
+    "Fantasie", "Kreativität", "Geduld", "Ausdauer", "Mut", "Ehrlichkeit", "Gerechtigkeit", "Gleichheit", "Freiheit", "Frieden",
+    "Konflikt", "Kompromiss", "Zusammenarbeit", "Unterstützung", "Hilfsbereitschaft", "Rücksichtnahme", "Toleranz", "Zuverlässigkeit", "Selbstständigkeit", "Neugierde",
+    "bewerten", "einschätzen", "diskutieren", "argumentieren", "überzeugen", "widersprechen", "zustimmen", "ablehnen", "vorschlagen", "beraten",
+    "organisieren", "koordinieren", "verwalten", "leiten", "entscheiden", "vertreten", "unterstützen", "ermutigen", "motivieren", "inspirieren",
+    // Klasse-6 band (67 words) — see LEVELS.de "k6".
+    "Verantwortung", "Möglichkeit", "Einfluss", "analysieren", "Wirtschaft", "Politik", "Demokratie", "Gesetz", "Recht", "Pflicht",
+    "Bürger", "Staat", "Regierung", "Verwaltung", "Institution", "Organisation", "Struktur", "System", "Prinzip", "Grundlage",
+    "Voraussetzung", "Bedingung", "Faktor", "Ursache", "Wirkung", "Folge", "Auswirkung", "Konsequenz", "Zusammenhang", "Beziehung",
+    "Verbindung", "Abhängigkeit", "Unabhängigkeit", "Perspektive", "Blickwinkel", "Interpretation", "Bedeutung", "Definition", "Begriff", "Konzept",
+    "Theorie", "Methode", "Verfahren", "Vorgehen", "Strategie", "Technik", "Instrument", "Ausrüstung", "Substanz", "Element",
+    "Komponente", "Bestandteil", "identifizieren", "interpretieren", "formulieren", "rechtfertigen", "verallgemeinern", "spezifizieren", "kombinieren", "integrieren",
+    "unterscheiden", "einordnen", "reflektieren", "kritisieren", "erweitern", "einbeziehen", "berücksichtigen",
   ],
 };
 
@@ -115,10 +176,17 @@ const LEVELS = {
     { id: "prek", startIndex: 0 },
     { id: "g1", startIndex: 92 },   // after pre-primer(40) + primer(52)
     { id: "g23", startIndex: 133 }, // after first grade(41)
+    { id: "g4", startIndex: 315 },  // after second/third grade(46+41) + Dolch nouns(95)
+    { id: "g5", startIndex: 387 },  // after the Grade-4 band(72)
+    { id: "g6", startIndex: 461 },  // after the Grade-5 band(74)
   ],
   de: [
     { id: "prek", startIndex: 0 },
     { id: "k1", startIndex: 60 },   // after the 60 core Vorschule words (der..heute)
     { id: "k2", startIndex: 210 },  // after the existing Klasse-1 words
+    { id: "k3", startIndex: 299 },  // after the existing Klasse-2 words
+    { id: "k4", startIndex: 371 },  // after the Klasse-3 band(72)
+    { id: "k5", startIndex: 440 },  // after the Klasse-4 band(69)
+    { id: "k6", startIndex: 510 },  // after the Klasse-5 band(70)
   ],
 };

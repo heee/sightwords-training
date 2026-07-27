@@ -173,6 +173,17 @@ function shuffleArray(arr) {
 // overridden per-kid in Settings — the stored choice always wins.
 function kidEmojiFor(kidRecord, name) { return (kidRecord && kidRecord.emoji) || kidEmoji(name); }
 
+// German is "unlocked" for a kid if they've explicitly toggled it (either
+// way), or - if they've never touched the toggle - if they already have
+// real German progress (so kids who already practice German aren't
+// suddenly locked out by a feature added after the fact). A kid created
+// after this feature ships has no progress and starts locked.
+function germanUnlockedFor(kidRecord) {
+  const explicit = kidRecord.settings && kidRecord.settings.germanEnabled;
+  if (typeof explicit === "boolean") return explicit;
+  return Object.keys((kidRecord.de && kidRecord.de.words) || {}).length > 0;
+}
+
 function clampNum(n, min, max, fallback) {
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
@@ -260,9 +271,19 @@ const T = {
     levelEnPrek: "Pre-K / K",
     levelEnG1: "1st grade",
     levelEnG23: "2nd/3rd grade",
+    levelEnG4: "4th grade",
+    levelEnG5: "5th grade",
+    levelEnG6: "6th grade",
     levelDePrek: "Pre-K / K",
     levelDeK1: "Grade 1",
     levelDeK2: "Grade 2",
+    levelDeK3: "Grade 3",
+    levelDeK4: "Grade 4",
+    levelDeK5: "Grade 5",
+    levelDeK6: "Grade 6",
+    enableGerman: "🇩🇪 Enable German",
+    off: "Off",
+    on: "On",
     saveSettings: "Save settings",
     settingsSaved: "Settings saved! ✅",
     nameUsedByAnother: "That name is already used by another kid.",
@@ -348,9 +369,19 @@ const T = {
     levelEnPrek: "Vorschule",
     levelEnG1: "1. Klasse",
     levelEnG23: "2./3. Klasse",
+    levelEnG4: "4. Klasse",
+    levelEnG5: "5. Klasse",
+    levelEnG6: "6. Klasse",
     levelDePrek: "Vorschule",
     levelDeK1: "Klasse 1",
     levelDeK2: "Klasse 2",
+    levelDeK3: "Klasse 3",
+    levelDeK4: "Klasse 4",
+    levelDeK5: "Klasse 5",
+    levelDeK6: "Klasse 6",
+    enableGerman: "🇩🇪 Deutsch aktivieren",
+    off: "Aus",
+    on: "An",
     saveSettings: "Einstellungen speichern",
     settingsSaved: "Einstellungen gespeichert! ✅",
     nameUsedByAnother: "Dieser Name wird bereits von einem anderen Kind verwendet.",
@@ -421,6 +452,9 @@ function applyStaticTranslations() {
   $("theme-btn-dark").textContent = t("themeDark");
   $("general-heading").textContent = t("general");
   $("label-avatar").textContent = t("avatarLabel");
+  $("label-enable-german").textContent = t("enableGerman");
+  $("german-toggle-off").textContent = t("off");
+  $("german-toggle-on").textContent = t("on");
   $("label-kid-name").textContent = t("kidName");
   $("label-words-per-session").textContent = t("wordsPerSession");
   $("label-new-words-per-day").textContent = t("newWordsPerDay");
@@ -1391,11 +1425,40 @@ $("theme-toggle").addEventListener("click", (e) => {
   applyTheme(btn.dataset.theme);
 });
 
+// Settings-only UI toggle (not persisted until Save) — selects the Off/On
+// button and shows/hides the German reading-level picker block for live
+// feedback, exactly like the theme toggle's own visual pattern.
+function setGermanToggleUI(isOn) {
+  document.querySelectorAll("#german-toggle .german-toggle-btn").forEach((b) => {
+    b.classList.toggle("active", (b.dataset.german === "on") === isOn);
+  });
+  $("german-level-block").classList.toggle("hidden", !isOn);
+}
+
+$("german-toggle").addEventListener("click", (e) => {
+  const btn = e.target.closest(".german-toggle-btn");
+  if (!btn) return;
+  setGermanToggleUI(btn.dataset.german === "on");
+});
+
 // ---- picker screen ----
 
 function renderPicker() {
   syncLangToggles();
   const data = getData();
+
+  // The German button is only shown if at least one kid on this device has
+  // German unlocked — otherwise hide it, and if the picker is currently
+  // stuck showing German UI with no way to switch, snap back to English.
+  const anyGermanUnlocked = Object.values(data.kids).some((k) => germanUnlockedFor(k));
+  $("picker-lang-toggle").querySelector('.lang-btn[data-lang="de"]').classList.toggle("hidden", !anyGermanUnlocked);
+  if (!anyGermanUnlocked && state.lang === "de") {
+    state.lang = "en";
+    localStorage.setItem(LS.lang, "en");
+    syncLangToggles();
+    applyStaticTranslations();
+  }
+
   const allNames = Object.keys(data.kids);
   const lastSelected = state.currentKid && allNames.includes(state.currentKid) ? state.currentKid : null;
   const others = allNames.filter((n) => n !== lastSelected);
@@ -1460,6 +1523,20 @@ function renderHome() {
   const data = getData();
   const kidRecord = data.kids[kid];
   if (!kidRecord) { showScreen("screen-picker"); return; }
+
+  // Hide the German button in this kid's topbar unless German is unlocked
+  // for them — and if they're currently stranded on German UI they can no
+  // longer exit via a hidden toggle, snap back to English before painting
+  // anything else below.
+  const germanUnlocked = germanUnlockedFor(kidRecord);
+  $("home-lang-toggle").querySelector('.lang-btn[data-lang="de"]').classList.toggle("hidden", !germanUnlocked);
+  if (!germanUnlocked && state.lang === "de") {
+    state.lang = "en";
+    localStorage.setItem(LS.lang, "en");
+    syncLangToggles();
+    applyStaticTranslations();
+  }
+
   const lang = state.lang;
   const langData = kidRecord[lang];
   const today = todayStr();
@@ -1776,8 +1853,14 @@ $("emoji-picker").addEventListener("click", (e) => {
 // Reading-level picker labels per (language, level id) — a small lookup into
 // the T dictionary so renderLevelPicker can localize each button's text.
 const LEVEL_LABEL_KEYS = {
-  en: { prek: "levelEnPrek", g1: "levelEnG1", g23: "levelEnG23" },
-  de: { prek: "levelDePrek", k1: "levelDeK1", k2: "levelDeK2" },
+  en: {
+    prek: "levelEnPrek", g1: "levelEnG1", g23: "levelEnG23",
+    g4: "levelEnG4", g5: "levelEnG5", g6: "levelEnG6",
+  },
+  de: {
+    prek: "levelDePrek", k1: "levelDeK1", k2: "levelDeK2",
+    k3: "levelDeK3", k4: "levelDeK4", k5: "levelDeK5", k6: "levelDeK6",
+  },
 };
 
 function renderLevelPicker(pickerId, lang, selectedId) {
@@ -1820,6 +1903,10 @@ function renderSettings() {
   $("settings-words-per-session").value = kidRecord.settings.wordsPerSession;
   $("settings-new-words-per-day").value = kidRecord.settings.newWordsPerDay;
   renderEmojiPicker(kidEmojiFor(kidRecord, kid), kidRecord);
+  // Initialize from the computed/effective value (not the raw field) so a
+  // kid with prior German progress but an unset germanEnabled field still
+  // shows "On" correctly.
+  setGermanToggleUI(germanUnlockedFor(kidRecord));
   renderLevelPickers(kidRecord.settings.levels.en, kidRecord.settings.levels.de);
 
   $("confirm-reset").classList.add("hidden");
@@ -1895,7 +1982,8 @@ $("btn-settings-save").addEventListener("click", async () => {
   const newWordsPerDay = clampNum(parseInt($("settings-new-words-per-day").value, 10), 0, 10, DEFAULT_SETTINGS.newWordsPerDay);
   const levelEn = $("level-picker-en").querySelector(".level-btn.selected")?.dataset.level || DEFAULT_SETTINGS.levels.en;
   const levelDe = $("level-picker-de").querySelector(".level-btn.selected")?.dataset.level || DEFAULT_SETTINGS.levels.de;
-  const settings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe } };
+  const germanEnabled = $("german-toggle").querySelector(".german-toggle-btn.active")?.dataset.german === "on";
+  const settings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe }, germanEnabled };
   const emoji = $("emoji-picker").querySelector(".emoji-btn.selected")?.dataset.emoji || "";
 
   const data = getData();
