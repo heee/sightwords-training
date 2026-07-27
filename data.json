@@ -6,8 +6,9 @@
         "newWordsPerDay": 3,
         "levels": {
           "en": "g23",
-          "de": "prek"
-        }
+          "de": "k1"
+        },
+        "germanEnabled": true
       },
       "en": {
         "words": {
