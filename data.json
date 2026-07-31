@@ -853,31 +853,31 @@
         "words": {
           "a": {
             "level": 1,
-            "correct": 1,
-            "wrong": 0,
+            "correct": 2,
+            "wrong": 1,
             "lastSeen": "2026-07-30",
             "nextDue": "2026-07-31",
             "firstSeen": "2026-07-30"
           },
           "and": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-30",
-            "nextDue": "2026-07-31",
+            "nextDue": "2026-08-02",
             "firstSeen": "2026-07-30"
           },
           "away": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-07-30",
-            "nextDue": "2026-07-31",
+            "nextDue": "2026-08-02",
             "firstSeen": "2026-07-30"
           }
         },
         "days": {
-          "2026-07-30": 3
+          "2026-07-30": 7
         }
       },
       "de": {
