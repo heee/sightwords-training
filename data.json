@@ -849,8 +849,35 @@
         }
       },
       "en": {
-        "words": {},
-        "days": {}
+        "words": {
+          "a": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-30",
+            "nextDue": "2026-07-31",
+            "firstSeen": "2026-07-30"
+          },
+          "and": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-30",
+            "nextDue": "2026-07-31",
+            "firstSeen": "2026-07-30"
+          },
+          "away": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-07-30",
+            "nextDue": "2026-07-31",
+            "firstSeen": "2026-07-30"
+          }
+        },
+        "days": {
+          "2026-07-30": 3
+        }
       },
       "de": {
         "words": {},
