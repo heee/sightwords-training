@@ -846,7 +846,8 @@
         "levels": {
           "en": "prek",
           "de": "prek"
-        }
+        },
+        "germanEnabled": false
       },
       "en": {
         "words": {
@@ -882,7 +883,8 @@
       "de": {
         "words": {},
         "days": {}
-      }
+      },
+      "emoji": "🐼"
     }
   }
 }
