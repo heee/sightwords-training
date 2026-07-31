@@ -852,12 +852,13 @@
       "en": {
         "words": {
           "a": {
-            "level": 2,
-            "correct": 3,
+            "level": 3,
+            "correct": 4,
             "wrong": 1,
             "lastSeen": "2026-07-30",
-            "nextDue": "2026-08-02",
-            "firstSeen": "2026-07-30"
+            "nextDue": "2026-08-06",
+            "firstSeen": "2026-07-30",
+            "masteredOn": "2026-07-30"
           },
           "and": {
             "level": 3,
@@ -879,7 +880,7 @@
           }
         },
         "days": {
-          "2026-07-30": 10
+          "2026-07-30": 11
         }
       },
       "de": {
