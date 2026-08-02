@@ -328,11 +328,11 @@
             "masteredOn": "2026-07-25"
           },
           "die": {
-            "level": 3,
+            "level": 2,
             "correct": 8,
-            "wrong": 12,
-            "lastSeen": "2026-07-29",
-            "nextDue": "2026-08-05",
+            "wrong": 13,
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-02",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-26"
           },
@@ -499,60 +499,87 @@
             "masteredOn": "2026-07-30"
           },
           "hier": {
-            "level": 1,
-            "correct": 2,
+            "level": 2,
+            "correct": 3,
             "wrong": 2,
-            "lastSeen": "2026-07-30",
-            "nextDue": "2026-07-31",
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-05",
             "firstSeen": "2026-07-26"
           },
           "da": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
-            "lastSeen": "2026-07-30",
-            "nextDue": "2026-08-02",
-            "firstSeen": "2026-07-29"
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-09",
+            "firstSeen": "2026-07-29",
+            "masteredOn": "2026-08-02"
           },
           "dort": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 1,
-            "lastSeen": "2026-07-30",
-            "nextDue": "2026-08-02",
-            "firstSeen": "2026-07-29"
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-09",
+            "firstSeen": "2026-07-29",
+            "masteredOn": "2026-08-02"
           },
           "dann": {
+            "level": 3,
+            "correct": 3,
+            "wrong": 0,
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-09",
+            "firstSeen": "2026-07-29",
+            "masteredOn": "2026-08-02"
+          },
+          "so": {
             "level": 2,
             "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-07-30",
-            "nextDue": "2026-08-02",
-            "firstSeen": "2026-07-29"
-          },
-          "so": {
-            "level": 1,
-            "correct": 1,
-            "wrong": 0,
-            "lastSeen": "2026-07-30",
-            "nextDue": "2026-07-31",
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-05",
             "firstSeen": "2026-07-30"
           },
           "nur": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-07-30",
-            "nextDue": "2026-07-31",
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-05",
             "firstSeen": "2026-07-30"
           },
           "wieder": {
+            "level": 2,
+            "correct": 2,
+            "wrong": 0,
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-05",
+            "firstSeen": "2026-07-30"
+          },
+          "mehr": {
             "level": 1,
             "correct": 1,
             "wrong": 0,
-            "lastSeen": "2026-07-30",
-            "nextDue": "2026-07-31",
-            "firstSeen": "2026-07-30"
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-03",
+            "firstSeen": "2026-08-02"
+          },
+          "weniger": {
+            "level": 0,
+            "correct": 0,
+            "wrong": 1,
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-02",
+            "firstSeen": "2026-08-02"
+          },
+          "kommt": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-08-02",
+            "nextDue": "2026-08-03",
+            "firstSeen": "2026-08-02"
           }
         },
         "days": {
@@ -562,7 +589,8 @@
           "2026-07-25": 31,
           "2026-07-26": 39,
           "2026-07-29": 16,
-          "2026-07-30": 20
+          "2026-07-30": 20,
+          "2026-08-02": 11
         }
       },
       "emoji": "🦔"
