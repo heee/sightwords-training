@@ -486,17 +486,30 @@ button { cursor: pointer; }
 
 .practice-progress-track {
   flex: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
   height: 10px;
+}
+.practice-progress-seg {
+  flex: 1;
+  min-width: 2px;
+  height: 100%;
   border-radius: 999px;
   background: var(--border);
-  overflow: hidden;
+  transition: background-color 0.25s ease, transform 0.2s ease;
 }
-.practice-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--sage), var(--powder));
-  border-radius: 999px;
-  transition: width 0.3s ease;
+.practice-progress-seg.is-done {
+  background: var(--sage);
+}
+.practice-progress-seg.is-current {
+  background: var(--ochre);
+  transform: scaleY(1.5);
+  animation: seg-pulse 1s ease-in-out infinite;
+}
+@keyframes seg-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 .btn-end-session {

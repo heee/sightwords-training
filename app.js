@@ -1636,13 +1636,21 @@ function updateMicWrongState(wrong) {
   $("btn-mic").classList.toggle("was-wrong", wrong);
 }
 
+// Queue length can grow mid-session (wrong answers get requeued), so the
+// segment count isn't fixed at session start — rebuild from scratch each
+// call rather than trying to diff in new segments.
 function updatePracticeProgress() {
   const s = state.session;
   if (!s) return;
+  const track = $("practice-progress-track");
   const total = s.queue.length;
   const done = s.index;
-  const pct = total ? Math.round((done / total) * 100) : 0;
-  $("practice-progress-fill").style.width = pct + "%";
+  track.innerHTML = "";
+  for (let i = 0; i < total; i++) {
+    const seg = document.createElement("div");
+    seg.className = "practice-progress-seg" + (i < done ? " is-done" : i === done ? " is-current" : "");
+    track.appendChild(seg);
+  }
 }
 
 function shakeWord() {
