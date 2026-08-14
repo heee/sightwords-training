@@ -92,8 +92,13 @@ const state = {
   // but reused across re-renders during the same visit (e.g. a language
   // toggle click) so the cards don't jitter while visible.
   pickerShuffle: null,
-  leaderboardPeriod: "week",
   session: null,
+  // True while the "Read a Real Sentence" panel is showing in place of the
+  // word/prompt (same screen, same mic button) — routes mic results to
+  // sentence matching instead of single-word matching.
+  sentenceActive: false,
+  sentenceTokens: [],
+  sentenceMatchedIdx: null,
   recognizing: false,
   autoAdvanceTimer: null,
   // Cloud speech (Groq) recording state — session-scoped, released on
@@ -225,12 +230,9 @@ const T = {
     goalExceeded: (n) => `Goal smashed — ${n} extra! 🌟`,
     toGo: (n) => `${n} to go!`,
     last7Days: "Last 7 days",
-    leaderboard: "Leaderboard",
-    periodDay: "Day",
-    periodWeek: "Week",
-    periodMonth: "Month",
-    periodQuarter: "Quarter",
-    periodYear: "Year",
+    wordsIKnow: "Words I Know",
+    wordsIKnowCount: (n) => n === 0 ? "Your collection is just getting started!" : `${n} word${n === 1 ? "" : "s"} in your collection!`,
+    noWordsYet: "Practice a few words to start your collection!",
     wordsCount: (n) => `${n} word${n === 1 ? "" : "s"}`,
     startPractice: "Start practice ▶",
     speechUnsupported: "Speech isn't available here — open this page in Safari.",
@@ -306,6 +308,12 @@ const T = {
     deleteConfirmQ: "Really delete this kid completely?",
     kidDeleted: "Kid deleted.",
     noWordsAvailable: "No words available right now — try adjusting Settings.",
+    masteredCheer: (word) => `You learned "${word}"!`,
+    masteredSub: "Added to your Words I Know collection! 🏆",
+    sentenceIntro: "Try reading!",
+    sentencePrompt: "Read the sentence out loud!",
+    sentenceContinue: "Continue practicing ▶",
+    sentenceIReadIt: "✅ I read it!",
   },
   de: {
     pickerSub: "Wähl deinen Leser aus oder füge jemand Neues hinzu!",
@@ -323,12 +331,9 @@ const T = {
     goalExceeded: (n) => `Ziel übertroffen — ${n} extra! 🌟`,
     toGo: (n) => `Noch ${n}!`,
     last7Days: "Letzte 7 Tage",
-    leaderboard: "Bestenliste",
-    periodDay: "Tag",
-    periodWeek: "Woche",
-    periodMonth: "Monat",
-    periodQuarter: "Quartal",
-    periodYear: "Jahr",
+    wordsIKnow: "Meine Wörter",
+    wordsIKnowCount: (n) => n === 0 ? "Deine Sammlung fängt gerade erst an!" : `${n} ${n === 1 ? "Wort" : "Wörter"} in deiner Sammlung!`,
+    noWordsYet: "Übe ein paar Wörter, um deine Sammlung zu starten!",
     wordsCount: (n) => `${n} ${n === 1 ? "Wort" : "Wörter"}`,
     startPractice: "Übung starten ▶",
     speechUnsupported: "Spracherkennung ist hier nicht verfügbar — öffne diese Seite in Safari.",
@@ -404,6 +409,12 @@ const T = {
     deleteConfirmQ: "Dieses Kind wirklich vollständig löschen?",
     kidDeleted: "Kind gelöscht.",
     noWordsAvailable: "Gerade keine Wörter verfügbar — versuch die Einstellungen anzupassen.",
+    masteredCheer: (word) => `Du hast „${word}" gelernt!`,
+    masteredSub: "Zu deiner Wörter-Sammlung hinzugefügt! 🏆",
+    sentenceIntro: "Versuch's mal!",
+    sentencePrompt: "Lies den Satz laut vor!",
+    sentenceContinue: "Weiter üben ▶",
+    sentenceIReadIt: "✅ Ich hab's gelesen!",
   },
 };
 
@@ -423,16 +434,16 @@ function applyStaticTranslations() {
   $("btn-new-kid-cancel").textContent = t("cancel");
   $("btn-new-kid-submit").textContent = t("letsGo");
 
-  $("btn-switch-kid").setAttribute("aria-label", t("switchKid"));
-  $("btn-switch-kid").title = t("switchKid");
+  $("switch-kid-label").textContent = t("switchKid");
   $("btn-open-settings").setAttribute("aria-label", t("settings"));
   $("btn-open-settings").title = t("settings");
   $("btn-start-practice").textContent = t("startPractice");
   $("weekly-chart-title").textContent = t("last7Days");
-  $("btn-leaderboard").setAttribute("aria-label", t("leaderboard"));
-  $("btn-leaderboard").title = t("leaderboard");
-  $("leaderboard-heading").textContent = t("leaderboard");
-  renderPeriodPicker();
+  $("btn-words-i-know").setAttribute("aria-label", t("wordsIKnow"));
+  $("btn-words-i-know").title = t("wordsIKnow");
+  $("words-i-know-heading").textContent = t("wordsIKnow");
+  $("words-i-know-back").setAttribute("aria-label", t("back"));
+  $("words-i-know-back").title = t("back");
 
   $("speech-unsupported-banner").textContent = t("speechUnsupported");
   $("btn-mic").setAttribute("aria-label", t("tapToListen"));
@@ -441,6 +452,9 @@ function applyStaticTranslations() {
   $("btn-next-word").textContent = t("next");
   $("btn-skip").textContent = t("skip");
   $("btn-end-session").textContent = t("endSession");
+  $("sentence-intro").textContent = t("sentenceIntro");
+  $("btn-sentence-continue").textContent = t("sentenceContinue");
+  $("btn-sentence-i-read-it").textContent = t("sentenceIReadIt");
 
   $("summary-title").textContent = t("sessionComplete");
   $("btn-summary-home").textContent = t("backHome");
@@ -751,6 +765,41 @@ function buildSession(langData, wordList, settings, today, alreadyIntroducedToda
   return { queue, newlyIntroducedCount };
 }
 
+// ------------------- "Read a Real Sentence" -------------------
+// Every so often, instead of another isolated word, the kid gets a tiny
+// sentence built entirely from words she already knows (Familiar+) — the
+// payoff moment that connects sight-word drilling to actual reading.
+
+const SENTENCE_EVERY_N = 6; // show one after every Nth word answered correctly
+const SENTENCE_MAX_PER_SESSION = 2; // keep it a bonus, not a takeover
+
+// Extracts just the letter-runs from a sentence, in order — used both to
+// check "does the kid know every word in this sentence" and, at render
+// time, to know which runs to wrap in highlightable spans (see
+// renderSentenceHTML). Punctuation/spacing is left untouched for display.
+function sentenceWordsOf(text) {
+  return text.match(/[\p{L}]+/gu) || [];
+}
+
+// Picks a sentence whose every word is at least Familiar (level >= 2) for
+// this kid+lang, avoiding immediate repeats within the same session. Null
+// if she doesn't know enough words yet for even one full sentence.
+function pickSentence(kid, lang) {
+  const s = state.session;
+  const data = getData();
+  const words = data.kids[kid][lang].words;
+  const known = new Set(Object.keys(words).filter((w) => words[w].level >= 2).map((w) => w.toLowerCase()));
+  const bank = (typeof SENTENCES !== "undefined" && SENTENCES[lang]) || [];
+  const eligible = bank.filter((text) => sentenceWordsOf(text).every((w) => known.has(w.toLowerCase())));
+  if (!eligible.length) return null;
+  const notRecent = eligible.filter((text) => !s.recentSentences.includes(text));
+  const pool = notRecent.length ? notRecent : eligible;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  s.recentSentences.push(pick);
+  if (s.recentSentences.length > 3) s.recentSentences.shift();
+  return pick;
+}
+
 function startSession(kid, lang) {
   const data = getData();
   const kidRecord = data.kids[kid];
@@ -767,11 +816,15 @@ function startSession(kid, lang) {
     queue,
     index: 0,
     requeued: new Set(),
+    skippedIndices: new Set(),
     correctCount: 0,
     practicedCount: 0,
+    sentencesShown: 0,
+    recentSentences: [],
     wordUpdates: {},
     dayCountBase: langData.days[today] || 0,
   };
+  state.sentenceActive = false;
 }
 
 function currentWord() {
@@ -782,7 +835,7 @@ function currentWord() {
 // immediately (so Home/Settings reflect it even mid-session), and
 // checkpoints a local-only queue snapshot so an abandoned session isn't lost.
 function recordAnswer(word, correct) {
-  if (!word) return; // defensive: never persist a bogus entry if called with no current word
+  if (!word) return { justMastered: false }; // defensive: never persist a bogus entry if called with no current word
   const s = state.session;
   const data = getData();
   const langData = data.kids[s.kid][s.lang];
@@ -792,6 +845,7 @@ function recordAnswer(word, correct) {
   // would still burn the budget, starving every later session that day
   // down to whatever's left (see the "and" repeating bug this fixed).
   const isNewWord = !langData.words[word];
+  const wasMastered = !!(langData.words[word] && langData.words[word].masteredOn);
   const newEntry = applyAnswer(langData.words[word], correct, s.today);
   langData.words[word] = newEntry;
   if (isNewWord) addNewIntroducedToday(s.kid, s.lang, s.today, 1);
@@ -814,6 +868,8 @@ function recordAnswer(word, correct) {
     s.requeued.add(word);
     s.queue.push(word);
   }
+
+  return { justMastered: !wasMastered && !!newEntry.masteredOn };
 }
 
 function endSession() {
@@ -1033,7 +1089,7 @@ function startListening() {
 
   const timeoutId = setTimeout(() => {
     if (!settled) { try { rec.stop(); } catch (e) { /* ignore */ } }
-  }, 6000);
+  }, state.sentenceActive ? 10000 : 6000);
 
   rec.onresult = (event) => {
     settled = true;
@@ -1041,7 +1097,11 @@ function startListening() {
     const result = event.results[0];
     const alternatives = [];
     for (let i = 0; i < result.length; i++) alternatives.push(result[i].transcript);
-    handleRecognitionResult(alternatives);
+    if (state.sentenceActive) {
+      matchSentenceAgainstAlternatives(alternatives, state.session.lang);
+    } else {
+      handleRecognitionResult(alternatives);
+    }
   };
   rec.onerror = () => {
     if (settled) return;
@@ -1206,6 +1266,7 @@ const VAD_SPEECH_RMS = 0.03;  // at/above: definitely speech
 const VAD_QUIET_RMS = 0.02;   // below: counts toward the end-of-speech quiet run
 const VAD_QUIET_STOP_MS = 700;
 const RECORD_MAX_MS = 3500;   // hard cap (also the total wait when no speech is detected)
+const RECORD_MAX_MS_SENTENCE = 7000; // a whole sentence needs more room than one word
 
 // Mic tap in cloud mode: first tap starts recording, a second tap while
 // recording stops it early; recording auto-stops ~0.7s after the child
@@ -1306,7 +1367,7 @@ async function startCloudListening() {
   }
   updateMicUI(true);
 
-  state.micRecordTimer = setTimeout(() => { stopCloudRecording(); }, RECORD_MAX_MS);
+  state.micRecordTimer = setTimeout(() => { stopCloudRecording(); }, state.sentenceActive ? RECORD_MAX_MS_SENTENCE : RECORD_MAX_MS);
 }
 
 function stopCloudRecording() {
@@ -1368,7 +1429,29 @@ async function finishCloudRecording(blob, peakRms) {
   }
   state.micBusy = false;
   const text = data && typeof data.text === "string" ? data.text : "";
-  handleCloudTranscript(text);
+  if (state.sentenceActive) {
+    handleSentenceCloudTranscript(text);
+  } else {
+    handleCloudTranscript(text);
+  }
+}
+
+// Cloud STT gives one best-guess transcript (not per-word alternatives like
+// Web Speech), so unlike the single-word path there's no isNoSpeechTranscript
+// token-count ceiling here — a real sentence naturally has more tokens than
+// a single word, and matchSentenceAgainstAlternatives already only credits
+// words that actually match, so a rambling transcript just highlights
+// nothing extra rather than being mistakenly accepted.
+function handleSentenceCloudTranscript(text) {
+  if (!state.sentenceActive || !state.session) return;
+  const norm = normalizeTranscript(text || "");
+  const lower = String(text || "").toLowerCase();
+  if (!norm || HALLUCINATION_PHRASES.some((p) => lower.includes(p))) {
+    $("mic-status").textContent = t("noSpeechHeard");
+    return;
+  }
+  matchSentenceAgainstAlternatives([text], state.session.lang);
+  $("mic-status").textContent = t("sentencePrompt");
 }
 
 function handleCloudTranscript(text) {
@@ -1400,7 +1483,7 @@ function showScreen(id) {
   if (id === "screen-home") renderHome();
   if (id === "screen-settings") renderSettings();
   if (id === "screen-practice") renderPracticeWord();
-  if (id === "screen-leaderboard") renderLeaderboard();
+  if (id === "screen-words-i-know") renderWordsIKnow();
 }
 
 function syncLangToggles() {
@@ -1415,6 +1498,7 @@ function setLang(lang) {
   if (state.screen === "screen-picker") renderPicker();
   if (state.screen === "screen-home") renderHome();
   if (state.screen === "screen-settings") renderSettings();
+  if (state.screen === "screen-words-i-know") renderWordsIKnow();
 }
 
 document.querySelectorAll(".lang-toggle").forEach((toggle) => {
@@ -1631,6 +1715,8 @@ function renderPracticeWord() {
   $("practice-prompt").textContent = t("whatWord");
   $("mic-status").textContent = (cloudModeActive() || speechSupported) ? t("tapToListen") : "";
   $("feedback-wrong").classList.add("hidden");
+  $("mastery-celebration").classList.add("hidden");
+  if (state.sentenceActive) hideSentencePanel();
   updateMicWrongState(false);
   state.session.lastWrongWord = null;
   state.session.lastWrongPriorEntry = null;
@@ -1654,7 +1740,8 @@ function updatePracticeProgress() {
   track.innerHTML = "";
   for (let i = 0; i < total; i++) {
     const seg = document.createElement("div");
-    seg.className = "practice-progress-seg" + (i < done ? " is-done" : i === done ? " is-current" : "");
+    const segState = s.skippedIndices.has(i) ? " is-skipped" : i < done ? " is-done" : i === done ? " is-current" : "";
+    seg.className = "practice-progress-seg" + segState;
     track.appendChild(seg);
   }
 }
@@ -1690,6 +1777,93 @@ function burstConfetti(container) {
   setTimeout(() => { container.innerHTML = ""; }, 1300);
 }
 
+// Renders a sentence with each letter-run wrapped in a highlightable span
+// (in the same order sentenceWordsOf() returns them), while leaving all
+// original punctuation/spacing/capitalization as plain text around them.
+function renderSentenceHTML(text) {
+  const re = /[\p{L}]+/gu;
+  let html = "";
+  let lastEnd = 0;
+  let idx = 0;
+  let m;
+  while ((m = re.exec(text))) {
+    html += escapeHtml(text.slice(lastEnd, m.index));
+    html += `<span class="sentence-word" data-idx="${idx}">${escapeHtml(m[0])}</span>`;
+    lastEnd = re.lastIndex;
+    idx++;
+  }
+  html += escapeHtml(text.slice(lastEnd));
+  return html;
+}
+
+function showSentencePanel(text) {
+  state.sentenceActive = true;
+  state.sentenceTokens = sentenceWordsOf(text);
+  state.sentenceMatchedIdx = new Set();
+  $("practice-word").classList.add("hidden");
+  $("practice-prompt").classList.add("hidden");
+  $("sentence-text").innerHTML = renderSentenceHTML(text);
+  $("sentence-panel").classList.remove("hidden");
+  $("mic-status").textContent = t("sentencePrompt");
+  updateMicWrongState(false);
+}
+
+function hideSentencePanel() {
+  state.sentenceActive = false;
+  $("sentence-panel").classList.add("hidden");
+  $("practice-word").classList.remove("hidden");
+  $("practice-prompt").classList.remove("hidden");
+}
+
+function applySentenceHighlights() {
+  document.querySelectorAll("#sentence-text .sentence-word").forEach((el) => {
+    el.classList.toggle("matched", state.sentenceMatchedIdx.has(Number(el.dataset.idx)));
+  });
+  const allMatched = state.sentenceTokens.length > 0 && state.sentenceMatchedIdx.size === state.sentenceTokens.length;
+  if (allMatched) {
+    playChime();
+    burstConfetti($("confetti-layer"));
+  }
+}
+
+// Reuses isMatch as-is (see the speech section below) against every target
+// word, rather than trying to positionally align transcript tokens — a
+// repeated word ("down, down, down") can highlight from a single hearing
+// of it, which is generous rather than strict, matching this app's overall
+// approach to a five-year-old's speech recognition.
+function matchSentenceAgainstAlternatives(alternatives, lang) {
+  state.sentenceTokens.forEach((word, idx) => {
+    if (state.sentenceMatchedIdx.has(idx)) return;
+    if (isMatch(alternatives, word, lang)) state.sentenceMatchedIdx.add(idx);
+  });
+  applySentenceHighlights();
+}
+
+function maybeShowSentence() {
+  const s = state.session;
+  if (!s || s.sentencesShown >= SENTENCE_MAX_PER_SESSION) { advanceSessionAndRender(); return; }
+  const sentence = pickSentence(s.kid, s.lang);
+  if (!sentence) { advanceSessionAndRender(); return; }
+  s.sentencesShown++;
+  showSentencePanel(sentence);
+}
+
+// A regular correct answer gets a quick cheer; the first time a word ever
+// crosses into Mastered is a bigger, distinct moment — a dedicated overlay,
+// a second confetti burst, and a longer pause before returning to the
+// session, so it reads as "you LEARNED this" rather than just "correct".
+function showMasteryCelebration(word) {
+  $("mastery-celebration-text").textContent = t("masteredCheer", word);
+  $("mastery-celebration-sub").textContent = t("masteredSub");
+  $("mastery-celebration").classList.remove("hidden");
+  setTimeout(() => burstConfetti($("confetti-layer")), 250);
+  clearTimeout(state.autoAdvanceTimer);
+  state.autoAdvanceTimer = setTimeout(() => {
+    $("mastery-celebration").classList.add("hidden");
+    advanceSessionAndRender();
+  }, 2600);
+}
+
 function advanceSessionAndRender() {
   clearTimeout(state.autoAdvanceTimer);
   $("feedback-wrong").classList.add("hidden");
@@ -1704,11 +1878,17 @@ function advanceSessionAndRender() {
 
 function handleCorrect() {
   const word = currentWord();
-  recordAnswer(word, true);
+  const s = state.session;
+  const { justMastered } = recordAnswer(word, true);
   playChime();
   burstConfetti($("confetti-layer"));
+  if (justMastered) {
+    showMasteryCelebration(word);
+    return;
+  }
   $("mic-status").textContent = t("correctCheer");
-  setTimeout(() => { advanceSessionAndRender(); }, 1200);
+  const dueForSentence = s.practicedCount > 0 && s.practicedCount % SENTENCE_EVERY_N === 0;
+  setTimeout(() => { dueForSentence ? maybeShowSentence() : advanceSessionAndRender(); }, 1200);
 }
 
 function handleWrong() {
@@ -1739,7 +1919,8 @@ function handleWrong() {
 function overridePreviousAnswerAsCorrect() {
   const s = state.session;
   const word = s.lastWrongWord;
-  if (!word) return;
+  if (!word) return { justMastered: false };
+  const wasMastered = !!(s.lastWrongPriorEntry && s.lastWrongPriorEntry.masteredOn);
   const data = getData();
   const langData = data.kids[s.kid][s.lang];
   const newEntry = applyAnswer(s.lastWrongPriorEntry, true, s.today);
@@ -1763,19 +1944,25 @@ function overridePreviousAnswerAsCorrect() {
   }
   s.lastWrongWord = null;
   s.lastWrongPriorEntry = null;
+  return { justMastered: !wasMastered && !!newEntry.masteredOn };
 }
 
 function handleMarkCorrect() {
   const s = state.session;
   if (!s || !s.lastWrongWord) return;
-  overridePreviousAnswerAsCorrect();
+  const word = s.lastWrongWord;
+  const { justMastered } = overridePreviousAnswerAsCorrect();
   clearTimeout(state.autoAdvanceTimer);
   $("feedback-wrong").classList.add("hidden");
   updateMicWrongState(false);
   playChime();
   burstConfetti($("confetti-layer"));
-  $("mic-status").textContent = t("correctCheer");
-  state.autoAdvanceTimer = setTimeout(() => { advanceSessionAndRender(); }, 1200);
+  if (justMastered) {
+    showMasteryCelebration(word);
+  } else {
+    $("mic-status").textContent = t("correctCheer");
+    state.autoAdvanceTimer = setTimeout(() => { advanceSessionAndRender(); }, 1200);
+  }
 }
 
 $("btn-mic").addEventListener("click", () => {
@@ -1810,14 +1997,32 @@ $("btn-next-word").addEventListener("click", () => {
   advanceSessionAndRender();
 });
 
+// Skipping must never shrink how much the child ends up practicing: the
+// skipped word is pushed back onto the end of the queue (so she still has
+// to face it) and marked red in the breadcrumb at its original slot.
 $("btn-skip").addEventListener("click", () => {
-  if (!state.session) return;
+  const s = state.session;
+  if (!s) return;
+  s.skippedIndices.add(s.index);
+  s.queue.push(currentWord());
   advanceSessionAndRender();
 });
 
 $("btn-end-session").addEventListener("click", () => {
   if (!state.session) return;
   endSession();
+});
+
+$("btn-sentence-continue").addEventListener("click", () => {
+  if (!state.sentenceActive) return;
+  hideSentencePanel();
+  advanceSessionAndRender();
+});
+
+$("btn-sentence-i-read-it").addEventListener("click", () => {
+  if (!state.sentenceActive) return;
+  state.sentenceTokens.forEach((_, idx) => state.sentenceMatchedIdx.add(idx));
+  applySentenceHighlights();
 });
 
 // ---- summary screen ----
@@ -2054,72 +2259,40 @@ $("btn-delete-kid-confirm").addEventListener("click", async () => {
   showScreen("screen-picker");
 });
 
-// ---- leaderboard screen ----
+// ---- "Words I Know" screen ----
+// The kid-facing trophy case: every word she's ever practiced, in the
+// current UI language, with a 4-segment strength bar reflecting its live
+// spaced-repetition level. Mastered words furthest first — the collection
+// itself is meant to feel like something she's building up, not a sorted
+// data dump (that lives in Settings > Word mastery for the parent).
+const LEVEL_LABEL_KEY_BY_TIER = ["levelNew", "levelLearning", "levelFamiliar", "levelMastered"];
+const LEVEL_CLASS_BY_TIER = ["level-new", "level-learning", "level-familiar", "level-mastered"];
 
-const PERIOD_IDS = ["day", "week", "month", "quarter", "year"];
-const PERIOD_LABEL_KEYS = {
-  day: "periodDay", week: "periodWeek", month: "periodMonth",
-  quarter: "periodQuarter", year: "periodYear",
-};
-// Rolling trailing windows ending today (not calendar-aligned weeks/months/
-// years) — consistent with the spaced-repetition engine and the 7-day
-// chart, and sidesteps locale-specific "what day does the week start on"
-// questions for a simple family leaderboard.
-const PERIOD_DAY_SPANS = { day: 1, week: 7, month: 30, quarter: 90, year: 365 };
-
-function renderPeriodPicker() {
-  $("period-picker").innerHTML = PERIOD_IDS.map((p) => `
-    <button type="button" class="level-btn${p === state.leaderboardPeriod ? " selected" : ""}" data-period="${p}">${escapeHtml(t(PERIOD_LABEL_KEYS[p]))}</button>
-  `).join("");
-}
-
-$("period-picker").addEventListener("click", (e) => {
-  const btn = e.target.closest(".level-btn");
-  if (!btn) return;
-  state.leaderboardPeriod = btn.dataset.period;
-  renderPeriodPicker();
-  renderLeaderboard();
-});
-
-// Total words practiced per kid in the CURRENTLY SELECTED language only
-// (matches every other per-kid stat on Home, which is also scoped to
-// state.lang), within the trailing window for the selected period.
-function computeLeaderboard(period) {
+function renderWordsIKnow() {
+  const kid = state.currentKid;
+  const lang = state.lang;
   const data = getData();
-  const today = todayStr();
-  const spanDays = PERIOD_DAY_SPANS[period] || 7;
-  const windowDays = new Set();
-  for (let i = 0; i < spanDays; i++) windowDays.add(addDays(today, -i));
+  const kidRecord = data.kids[kid];
+  if (!kidRecord) return;
+  const words = kidRecord[lang].words;
 
-  const rows = Object.keys(data.kids).map((name) => {
-    const kidRecord = data.kids[name];
-    const days = (kidRecord[state.lang] && kidRecord[state.lang].days) || {};
-    let count = 0;
-    for (const d of Object.keys(days)) {
-      if (windowDays.has(d)) count += days[d] || 0;
-    }
-    return { name, count, emoji: kidEmojiFor(kidRecord, name) };
-  });
-  rows.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  return rows;
-}
+  const entries = Object.keys(words).map((w) => ({ word: w, level: words[w].level }));
+  entries.sort((a, b) => b.level - a.level || a.word.localeCompare(b.word));
 
-const RANK_MEDALS = ["🥇", "🥈", "🥉"];
-
-function renderLeaderboard() {
-  const rows = computeLeaderboard(state.leaderboardPeriod);
-  $("leaderboard-list").innerHTML = rows.map((r, i) => `
-    <div class="leaderboard-row${r.name === state.currentKid ? " current" : ""}">
-      <div class="leaderboard-rank">${RANK_MEDALS[i] || String(i + 1)}</div>
-      <div class="leaderboard-avatar">${r.emoji}</div>
-      <div class="leaderboard-name">${escapeHtml(r.name)}</div>
-      <div class="leaderboard-count">${escapeHtml(t("wordsCount", r.count))}</div>
+  $("words-i-know-sub").textContent = t("wordsIKnowCount", entries.length);
+  $("words-i-know-list").innerHTML = entries.length ? entries.map((e) => `
+    <div class="words-i-know-row">
+      <span class="words-i-know-word">${escapeHtml(e.word)}</span>
+      <span class="strength-bar ${LEVEL_CLASS_BY_TIER[e.level]}" role="img" aria-label="${escapeHtml(t(LEVEL_LABEL_KEY_BY_TIER[e.level]))}">
+        ${[0, 1, 2, 3].map((i) => `<span class="strength-seg${i <= e.level ? " filled" : ""}"></span>`).join("")}
+      </span>
+      ${e.level === 3 ? `<span class="words-i-know-badge" aria-hidden="true">🏆</span>` : ""}
     </div>
-  `).join("");
+  `).join("") : `<p class="settings-hint">${escapeHtml(t("noWordsYet"))}</p>`;
 }
 
-$("btn-leaderboard").addEventListener("click", () => showScreen("screen-leaderboard"));
-$("btn-leaderboard-back").addEventListener("click", () => showScreen("screen-home"));
+$("btn-words-i-know").addEventListener("click", () => showScreen("screen-words-i-know"));
+$("words-i-know-back").addEventListener("click", () => showScreen("screen-home"));
 
 // ------------------- init -------------------
 

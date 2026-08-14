@@ -53,8 +53,7 @@
   <section id="screen-home" class="screen">
     <div class="home-topbar">
       <div class="home-topbar-left">
-        <button id="btn-switch-kid" type="button" class="icon-btn" aria-label="Switch kid" title="Switch kid">👥</button>
-        <button id="btn-leaderboard" type="button" class="icon-btn" aria-label="Leaderboard" title="Leaderboard">🏆</button>
+        <button id="btn-words-i-know" type="button" class="icon-btn" aria-label="Words I know" title="Words I know">📚</button>
       </div>
       <div id="home-lang-toggle" class="lang-toggle lang-toggle-compact" role="tablist">
         <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇺🇸</button>
@@ -107,6 +106,19 @@
       <div id="confetti-layer" class="confetti" aria-hidden="true"></div>
       <div id="practice-word" class="practice-word"></div>
       <p id="practice-prompt" class="practice-prompt">What word is this?</p>
+      <div id="mastery-celebration" class="mastery-celebration hidden">
+        <div class="mastery-celebration-icon">🏆</div>
+        <div id="mastery-celebration-text" class="mastery-celebration-text"></div>
+        <div id="mastery-celebration-sub" class="mastery-celebration-sub"></div>
+      </div>
+      <div id="sentence-panel" class="sentence-panel hidden">
+        <p id="sentence-intro" class="sentence-intro">Try reading!</p>
+        <p id="sentence-text" class="sentence-text"></p>
+        <div class="sentence-actions">
+          <button id="btn-sentence-i-read-it" type="button" class="btn btn-secondary">✅ I read it!</button>
+          <button id="btn-sentence-continue" type="button" class="btn btn-primary">Continue practicing ▶</button>
+        </div>
+      </div>
     </div>
 
     <div class="practice-mic-area">
@@ -143,6 +155,10 @@
     <div class="settings-topbar">
       <button id="btn-settings-back" type="button" class="icon-btn" aria-label="Back" title="Back">←</button>
       <h1 id="settings-heading" class="screen-title settings-title">Settings</h1>
+    </div>
+
+    <div class="settings-block">
+      <button id="btn-switch-kid" type="button" class="btn btn-secondary btn-switch-kid">👥 <span id="switch-kid-label">Switch kid</span></button>
     </div>
 
     <div class="settings-block">
@@ -221,16 +237,16 @@
     </div>
   </section>
 
-  <!-- ============ SCREEN: LEADERBOARD ============ -->
-  <section id="screen-leaderboard" class="screen">
+  <!-- ============ SCREEN: WORDS I KNOW ============ -->
+  <section id="screen-words-i-know" class="screen">
     <div class="settings-topbar">
-      <button id="btn-leaderboard-back" type="button" class="icon-btn" aria-label="Back" title="Back">←</button>
-      <h1 id="leaderboard-heading" class="screen-title settings-title">Leaderboard</h1>
+      <button id="words-i-know-back" type="button" class="icon-btn" aria-label="Back" title="Back">←</button>
+      <h1 id="words-i-know-heading" class="screen-title settings-title">Words I Know</h1>
     </div>
 
-    <div id="period-picker" class="level-picker" role="tablist"></div>
+    <p id="words-i-know-sub" class="screen-sub"></p>
 
-    <div id="leaderboard-list" class="leaderboard-list"></div>
+    <div id="words-i-know-list" class="words-i-know-list"></div>
   </section>
 
 </div>
@@ -238,6 +254,7 @@
 <div id="toast" class="toast hidden"></div>
 
 <script src="words.js"></script>
+<script src="sentences.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

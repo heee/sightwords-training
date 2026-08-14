@@ -140,6 +140,7 @@ button { cursor: pointer; }
 .btn-secondary { background: var(--card); color: var(--ink); border: 2px solid var(--border); }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-large { width: 100%; font-size: 1.15rem; padding: 1.1rem 1.4rem; }
+.btn-switch-kid { width: 100%; }
 
 .btn-start {
   margin-top: auto;
@@ -507,6 +508,9 @@ button { cursor: pointer; }
   transform: scaleY(1.5);
   animation: seg-pulse 1s ease-in-out infinite;
 }
+.practice-progress-seg.is-skipped {
+  background: var(--rose);
+}
 @keyframes seg-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
@@ -547,7 +551,7 @@ button { cursor: pointer; }
 .practice-word {
   font-weight: 900;
   line-height: 1;
-  font-size: clamp(2.8rem, 15vw, 6.5rem);
+  font-size: clamp(3.6rem, 20vw, 8.5rem);
   word-break: break-word;
   color: var(--ink);
   transition: transform 0.15s ease;
@@ -673,6 +677,78 @@ button { cursor: pointer; }
   100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 0; }
 }
 
+/* Mastery celebration — a bigger, distinct moment from the ordinary
+   correct-answer confetti, shown once when a word first reaches Mastered. */
+.mastery-celebration {
+  position: absolute;
+  inset: -1rem;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1.5rem;
+  background: color-mix(in srgb, var(--sage) 16%, var(--bg) 92%);
+  border-radius: var(--radius);
+  animation: mastery-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.mastery-celebration.hidden { display: none; }
+.mastery-celebration-icon { font-size: 3.5rem; animation: mastery-icon-bob 1.4s ease-in-out infinite; }
+.mastery-celebration-text { font-size: 1.6rem; font-weight: 900; text-align: center; color: var(--ink); }
+.mastery-celebration-sub { font-size: 1rem; font-weight: 700; text-align: center; color: var(--ink-dim); }
+@keyframes mastery-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes mastery-icon-bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+}
+
+/* "Read a Real Sentence" panel — replaces the word/prompt area, reuses the
+   same mic button below it. Untimed and self-paced (no auto-advance timer,
+   unlike a normal word answer) since reading a whole sentence out loud
+   takes a beat. */
+.sentence-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  width: 100%;
+}
+.sentence-panel.hidden { display: none; }
+.sentence-intro {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.sentence-text {
+  font-weight: 900;
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  line-height: 1.35;
+  text-align: center;
+  margin: 0;
+}
+.sentence-word {
+  color: var(--ink-dim);
+  transition: color 0.25s ease;
+}
+.sentence-word.matched {
+  color: var(--sage-deep);
+  background: color-mix(in srgb, var(--sage) 30%, transparent);
+  border-radius: 6px;
+}
+.sentence-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  justify-content: center;
+}
+.sentence-actions .btn { flex: 1 1 160px; max-width: 240px; }
+
 /* ---------------- Summary screen ---------------- */
 
 .summary-body {
@@ -783,45 +859,26 @@ button { cursor: pointer; }
 .confirm-actions { display: flex; gap: 0.6rem; }
 .confirm-actions .btn { flex: 1; }
 
-/* ---------------- Leaderboard ---------------- */
+/* ---------------- Words I Know ---------------- */
 
-/* 5 options must fit on one line even on the narrowest iPhone — denser
-   sizing than the 2-3-option reading-level pickers that share .level-btn. */
-#period-picker {
-  margin-bottom: 1.25rem;
-  flex-wrap: nowrap;
-  gap: 0.3rem;
-}
-#period-picker .level-btn {
-  flex: 1;
-  padding: 0.5rem 0.2rem;
-  font-size: 0.72rem;
-  min-height: 40px;
-  white-space: nowrap;
-}
-
-.leaderboard-list { display: flex; flex-direction: column; gap: 0.6rem; }
-.leaderboard-row {
+.words-i-know-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.words-i-know-row {
   background: var(--card);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
-  padding: 0.7rem 1rem;
+  padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
-.leaderboard-row.current { outline: 3px solid var(--sage); }
-.leaderboard-rank {
-  font-size: 1.1rem;
-  font-weight: 900;
-  width: 1.8rem;
-  text-align: center;
-  flex-shrink: 0;
-  color: var(--ink-dim);
-}
-.leaderboard-avatar { font-size: 1.6rem; flex-shrink: 0; }
-.leaderboard-name { font-weight: 800; flex: 1; }
-.leaderboard-count { font-weight: 800; color: var(--ink-dim); white-space: nowrap; }
+.words-i-know-word { font-weight: 800; font-size: 1.05rem; flex: 1; }
+.strength-bar { display: flex; gap: 3px; flex-shrink: 0; }
+.strength-seg { width: 1.1rem; height: 0.55rem; border-radius: 999px; background: var(--border); }
+.strength-bar.level-new .strength-seg.filled { background: var(--powder); }
+.strength-bar.level-learning .strength-seg.filled { background: var(--rose); }
+.strength-bar.level-familiar .strength-seg.filled { background: var(--ochre); }
+.strength-bar.level-mastered .strength-seg.filled { background: var(--sage); }
+.words-i-know-badge { font-size: 1.3rem; flex-shrink: 0; }
 
 /* ---------------- Toast ---------------- */
 
@@ -850,7 +907,7 @@ button { cursor: pointer; }
 @media (min-width: 700px) {
   #app { max-width: 720px; }
   .screen { padding: 2.25rem 2.5rem 2.5rem; }
-  .practice-word { font-size: clamp(3.5rem, 12vw, 8rem); }
+  .practice-word { font-size: clamp(4.5rem, 16vw, 11rem); }
   .mic-btn { width: 7.5rem; height: 7.5rem; }
   .mic-btn .mic-emoji { font-size: 3rem; }
 }

@@ -1,0 +1,102 @@
+// ===========================================================
+// Sight Words Training — "Read a Real Sentence" bank
+// Every word in every sentence below must exist (case-insensitively) in
+// the matching WORDS[lang] list in words.js — a sentence only ever shows
+// once the kid actually knows (Familiar+) every word in it, so this is a
+// hard requirement, not just a style guideline. If you add a sentence,
+// double-check each word appears in words.js, including for German where
+// case/conjugation matters: the DE word list only has 3rd-person-singular
+// present-tense verb forms ("läuft", not "laufen"/"läufst"), nominative
+// articles ("der/die/das", not "den/dem/einen"), and no accusative object
+// pronouns ("mich/dich") — so DE sentences here stick to nominative
+// subjects + those exact verb forms, plus "ich bin/habe/kann/mag" (whose
+// 1st-person form happens to match the base form already in the list).
+// ===========================================================
+
+const SENTENCES = {
+  en: [
+    "I can see you.",
+    "Look, see me!",
+    "Come and play.",
+    "I can jump up.",
+    "Can you see it?",
+    "Go up, up, up!",
+    "I can help you.",
+    "Come here and play.",
+    "I can find it.",
+    "Down, down, down we go.",
+    "It is funny!",
+    "The little one is here.",
+    "We can go up.",
+    "Find my little one.",
+    "Away we go!",
+    "It is not here.",
+    "Play with me.",
+    "I can see two.",
+    "Look up and see.",
+    "Yellow, blue, and red.",
+    "The big one can jump.",
+    "Help me find it.",
+    "I said look here.",
+    "Make it big.",
+    "Where is it?",
+    "For you and me.",
+    "I can run and jump.",
+    "See the big one.",
+    "My little one is funny.",
+    "Run to me.",
+    "I like the red dog.",
+    "The big cat can jump.",
+    "I have a little dog.",
+    "He can see the sun.",
+    "We have a big house.",
+    "I want to play with you.",
+    "The boy and the girl play.",
+    "Look at the pretty tree.",
+    "She saw a little bird.",
+    "I have a red ball.",
+    "The dog can jump up.",
+    "We went to the house.",
+    "He said the cat is funny.",
+    "I saw a big tree.",
+    "The girl has a doll.",
+    "Come and see my house.",
+    "The boy can run and play.",
+    "I like to play with my dog.",
+    "She has a good dog.",
+    "We saw the sun and the tree.",
+  ],
+
+  de: [
+    "Der Hund ist groß.",
+    "Die Katze ist klein.",
+    "Der Ball ist rot.",
+    "Die Sonne ist gelb.",
+    "Der Baum ist groß.",
+    "Das Auto ist schnell.",
+    "Der Hund läuft.",
+    "Die Katze schläft.",
+    "Der Vogel fliegt.",
+    "Das Kind spielt.",
+    "Mama lacht.",
+    "Papa liest.",
+    "Der Freund lacht.",
+    "Die Schwester singt.",
+    "Der Bruder springt.",
+    "Das Kind isst.",
+    "Der Hund trinkt.",
+    "Die Katze sitzt.",
+    "Der Vogel singt.",
+    "Mein Hund ist gut.",
+    "Mein Ball ist blau.",
+    "Ich bin klein.",
+    "Ich habe ein Buch.",
+    "Ich habe ein Auto.",
+    "Wir haben ein Haus.",
+    "Ich mag die Sonne.",
+    "Ich mag die Katze.",
+    "Ich mag das Auto.",
+    "Die Blume ist schön.",
+    "Die Maus ist klein.",
+  ],
+};
