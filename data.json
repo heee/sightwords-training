@@ -639,7 +639,8 @@
         "levels": {
           "en": "prek",
           "de": "prek"
-        }
+        },
+        "germanEnabled": true
       },
       "en": {
         "words": {
@@ -991,7 +992,7 @@
           "2026-07-21": 22
         }
       },
-      "emoji": "🦋"
+      "emoji": "🦔"
     },
     "Cat kid 🍻": {
       "settings": {
