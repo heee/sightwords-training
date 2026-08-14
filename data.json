@@ -14,7 +14,7 @@
         "words": {
           "a": {
             "level": 3,
-            "correct": 15,
+            "correct": 16,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -23,7 +23,7 @@
           },
           "away": {
             "level": 3,
-            "correct": 14,
+            "correct": 15,
             "wrong": 1,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -32,7 +32,7 @@
           },
           "and": {
             "level": 3,
-            "correct": 14,
+            "correct": 15,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -41,7 +41,7 @@
           },
           "big": {
             "level": 3,
-            "correct": 14,
+            "correct": 15,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -50,7 +50,7 @@
           },
           "blue": {
             "level": 3,
-            "correct": 13,
+            "correct": 14,
             "wrong": 2,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -59,7 +59,7 @@
           },
           "after": {
             "level": 3,
-            "correct": 14,
+            "correct": 15,
             "wrong": 1,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -68,7 +68,7 @@
           },
           "again": {
             "level": 3,
-            "correct": 13,
+            "correct": 14,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -77,7 +77,7 @@
           },
           "an": {
             "level": 3,
-            "correct": 9,
+            "correct": 10,
             "wrong": 11,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -86,7 +86,7 @@
           },
           "always": {
             "level": 3,
-            "correct": 13,
+            "correct": 14,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -95,7 +95,7 @@
           },
           "around": {
             "level": 3,
-            "correct": 13,
+            "correct": 14,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -104,7 +104,7 @@
           },
           "because": {
             "level": 3,
-            "correct": 10,
+            "correct": 11,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -113,7 +113,7 @@
           },
           "been": {
             "level": 3,
-            "correct": 9,
+            "correct": 10,
             "wrong": 5,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -122,7 +122,7 @@
           },
           "before": {
             "level": 3,
-            "correct": 10,
+            "correct": 11,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -131,7 +131,7 @@
           },
           "best": {
             "level": 3,
-            "correct": 9,
+            "correct": 10,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -140,7 +140,7 @@
           },
           "both": {
             "level": 3,
-            "correct": 7,
+            "correct": 9,
             "wrong": 1,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -149,7 +149,7 @@
           },
           "buy": {
             "level": 3,
-            "correct": 7,
+            "correct": 8,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-21",
@@ -337,35 +337,36 @@
             "masteredOn": "2026-08-14"
           },
           "common": {
+            "level": 3,
+            "correct": 3,
+            "wrong": 0,
+            "lastSeen": "2026-08-14",
+            "nextDue": "2026-08-21",
+            "firstSeen": "2026-08-09",
+            "masteredOn": "2026-08-14"
+          },
+          "distance": {
             "level": 2,
             "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-08-14",
             "nextDue": "2026-08-17",
-            "firstSeen": "2026-08-09"
-          },
-          "distance": {
-            "level": 1,
-            "correct": 1,
-            "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-15",
             "firstSeen": "2026-08-14"
           },
           "product": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-15",
+            "nextDue": "2026-08-17",
             "firstSeen": "2026-08-14"
           },
           "method": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
             "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-15",
+            "nextDue": "2026-08-17",
             "firstSeen": "2026-08-14"
           }
         },
@@ -378,7 +379,7 @@
           "2026-07-30": 60,
           "2026-08-04": 20,
           "2026-08-09": 20,
-          "2026-08-14": 40
+          "2026-08-14": 61
         }
       },
       "de": {
