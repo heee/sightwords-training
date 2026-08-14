@@ -692,13 +692,21 @@ function applyAnswer(entry, correct, today) {
   return e;
 }
 
-// Builds one practice queue: due reviews first (lowest level, then oldest
-// lastSeen), then brand-new words in list order STARTING AT startIndex
-// (words before it are "assumed known" for this kid's level and never
-// introduced — capped by the daily new-word budget), then top-up with
-// soonest-due already-seen words. Reviews and top-up are unaffected by
-// startIndex — any word with stored progress keeps working regardless of
-// the kid's current level.
+// Builds one practice queue: brand-new words first (in list order STARTING
+// AT startIndex — words before it are "assumed known" for this kid's level
+// and never introduced), capped by the daily new-word budget and given a
+// reserved slice of the session BEFORE due reviews are considered. This is
+// deliberate: once a word reaches Mastered it re-enters the review rotation
+// every 7 days indefinitely, so the review backlog only ever grows. If due
+// reviews were filled first (as before), that growing backlog would
+// eventually consume the entire session every time and permanently starve
+// new-word introduction — which is exactly what was happening. Reserving
+// the new-word budget up front guarantees steady vocabulary growth
+// regardless of how large the review backlog gets. Due reviews (lowest
+// level, then oldest lastSeen) fill the rest, then top-up with soonest-due
+// already-seen words. Reviews and top-up are unaffected by startIndex — any
+// word with stored progress keeps working regardless of the kid's current
+// level.
 function buildSession(langData, wordList, settings, today, alreadyIntroducedToday, startIndex = 0) {
   const words = langData.words || {};
   const wordsPerSession = settings.wordsPerSession;
@@ -707,8 +715,18 @@ function buildSession(langData, wordList, settings, today, alreadyIntroducedToda
   const queue = [];
   const used = new Set();
 
+  let newlyIntroducedCount = 0;
+  for (let i = startIndex; i < wordList.length; i++) {
+    const w = wordList[i];
+    if (queue.length >= wordsPerSession || newlyIntroducedCount >= newBudget) break;
+    if (words[w] || used.has(w)) continue;
+    queue.push(w);
+    used.add(w);
+    newlyIntroducedCount++;
+  }
+
   const due = Object.keys(words)
-    .filter((w) => words[w].nextDue <= today)
+    .filter((w) => words[w].nextDue <= today && !used.has(w))
     .sort((a, b) => {
       if (words[a].level !== words[b].level) return words[a].level - words[b].level;
       return (words[a].lastSeen || "").localeCompare(words[b].lastSeen || "");
@@ -717,18 +735,6 @@ function buildSession(langData, wordList, settings, today, alreadyIntroducedToda
     if (queue.length >= wordsPerSession) break;
     queue.push(w);
     used.add(w);
-  }
-
-  let newlyIntroducedCount = 0;
-  if (queue.length < wordsPerSession) {
-    for (let i = startIndex; i < wordList.length; i++) {
-      const w = wordList[i];
-      if (queue.length >= wordsPerSession || newlyIntroducedCount >= newBudget) break;
-      if (words[w] || used.has(w)) continue;
-      queue.push(w);
-      used.add(w);
-      newlyIntroducedCount++;
-    }
   }
 
   if (queue.length < wordsPerSession) {
