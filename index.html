@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Sight Words</title>
 <meta name="description" content="Bilingual sight-word reading practice for early readers — English and German.">
+<script>
+window.addEventListener("error", function (e) {
+  document.title = "DIAG:" + JSON.stringify({ m: e.message, f: e.filename, l: e.lineno, c: e.colno, s: e.error && e.error.stack });
+});
+</script>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
