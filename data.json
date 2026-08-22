@@ -737,19 +737,19 @@
         "words": {
           "and": {
             "level": 3,
-            "correct": 33,
+            "correct": 34,
             "wrong": 5,
-            "lastSeen": "2026-08-15",
-            "nextDue": "2026-08-22",
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-29",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-21"
           },
           "a": {
             "level": 3,
-            "correct": 24,
+            "correct": 25,
             "wrong": 8,
-            "lastSeen": "2026-08-15",
-            "nextDue": "2026-08-22",
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-29",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-26"
           },
@@ -764,19 +764,19 @@
           },
           "big": {
             "level": 3,
-            "correct": 24,
+            "correct": 25,
             "wrong": 4,
-            "lastSeen": "2026-08-15",
-            "nextDue": "2026-08-22",
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-29",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-23"
           },
           "blue": {
             "level": 3,
-            "correct": 17,
+            "correct": 18,
             "wrong": 3,
-            "lastSeen": "2026-08-15",
-            "nextDue": "2026-08-22",
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-29",
             "firstSeen": "2026-07-23",
             "masteredOn": "2026-07-25"
           },
@@ -1034,10 +1034,10 @@
           },
           "to": {
             "level": 3,
-            "correct": 3,
+            "correct": 4,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-29",
             "firstSeen": "2026-08-14",
             "masteredOn": "2026-08-14"
           },
@@ -1135,7 +1135,7 @@
           "2026-08-15": 15,
           "2026-08-16": 22,
           "2026-08-17": 27,
-          "2026-08-22": 9
+          "2026-08-22": 14
         }
       },
       "de": {
