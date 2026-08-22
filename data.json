@@ -374,35 +374,59 @@
           },
           "section": {
             "level": 2,
-            "correct": 2,
-            "wrong": 0,
-            "lastSeen": "2026-08-17",
-            "nextDue": "2026-08-20",
+            "correct": 3,
+            "wrong": 1,
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-25",
             "firstSeen": "2026-08-16"
           },
           "direct": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-08-17",
-            "nextDue": "2026-08-18",
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-25",
             "firstSeen": "2026-08-17"
           },
           "single": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-08-17",
-            "nextDue": "2026-08-18",
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-25",
             "firstSeen": "2026-08-17"
           },
           "effect": {
+            "level": 2,
+            "correct": 2,
+            "wrong": 0,
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-25",
+            "firstSeen": "2026-08-17"
+          },
+          "general": {
             "level": 1,
             "correct": 1,
             "wrong": 0,
-            "lastSeen": "2026-08-17",
-            "nextDue": "2026-08-18",
-            "firstSeen": "2026-08-17"
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-23",
+            "firstSeen": "2026-08-22"
+          },
+          "position": {
+            "level": 0,
+            "correct": 0,
+            "wrong": 1,
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-22",
+            "firstSeen": "2026-08-22"
+          },
+          "force": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-08-22",
+            "nextDue": "2026-08-23",
+            "firstSeen": "2026-08-22"
           }
         },
         "days": {
@@ -416,7 +440,8 @@
           "2026-08-09": 20,
           "2026-08-14": 102,
           "2026-08-16": 1,
-          "2026-08-17": 7
+          "2026-08-17": 7,
+          "2026-08-22": 8
         }
       },
       "de": {
