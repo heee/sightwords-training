@@ -1014,11 +1014,11 @@
             "masteredOn": "2026-08-13"
           },
           "said": {
-            "level": 2,
-            "correct": 3,
+            "level": 3,
+            "correct": 4,
             "wrong": 1,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-22",
+            "lastSeen": "2026-08-28",
+            "nextDue": "2026-09-04",
             "firstSeen": "2026-08-13",
             "masteredOn": "2026-08-14"
           },
@@ -1111,11 +1111,11 @@
             "firstSeen": "2026-08-17"
           },
           "all": {
-            "level": 1,
+            "level": 0,
             "correct": 2,
-            "wrong": 1,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-23",
+            "wrong": 2,
+            "lastSeen": "2026-08-28",
+            "nextDue": "2026-08-28",
             "firstSeen": "2026-08-17"
           },
           "am": {
@@ -1127,11 +1127,11 @@
             "firstSeen": "2026-08-17"
           },
           "at": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-23",
+            "lastSeen": "2026-08-28",
+            "nextDue": "2026-08-31",
             "firstSeen": "2026-08-22"
           },
           "are": {
@@ -1143,12 +1143,28 @@
             "firstSeen": "2026-08-22"
           },
           "ate": {
+            "level": 0,
+            "correct": 1,
+            "wrong": 1,
+            "lastSeen": "2026-08-28",
+            "nextDue": "2026-08-28",
+            "firstSeen": "2026-08-22"
+          },
+          "be": {
             "level": 1,
             "correct": 1,
             "wrong": 0,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-23",
-            "firstSeen": "2026-08-22"
+            "lastSeen": "2026-08-28",
+            "nextDue": "2026-08-29",
+            "firstSeen": "2026-08-28"
+          },
+          "brown": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 1,
+            "lastSeen": "2026-08-28",
+            "nextDue": "2026-08-29",
+            "firstSeen": "2026-08-28"
           }
         },
         "days": {
@@ -1168,7 +1184,8 @@
           "2026-08-15": 15,
           "2026-08-16": 22,
           "2026-08-17": 27,
-          "2026-08-22": 16
+          "2026-08-22": 16,
+          "2026-08-28": 7
         }
       },
       "de": {
