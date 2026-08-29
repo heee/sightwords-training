@@ -41,109 +41,109 @@
           },
           "big": {
             "level": 3,
-            "correct": 17,
+            "correct": 18,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "blue": {
             "level": 3,
-            "correct": 16,
+            "correct": 17,
             "wrong": 2,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "after": {
             "level": 3,
-            "correct": 17,
+            "correct": 18,
             "wrong": 1,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "again": {
             "level": 3,
-            "correct": 16,
+            "correct": 17,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "an": {
-            "level": 3,
+            "level": 2,
             "correct": 12,
-            "wrong": 11,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "wrong": 12,
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-08-29",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "always": {
             "level": 3,
-            "correct": 16,
+            "correct": 17,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "around": {
             "level": 3,
-            "correct": 16,
+            "correct": 17,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "because": {
             "level": 3,
-            "correct": 13,
+            "correct": 14,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "been": {
             "level": 3,
-            "correct": 12,
+            "correct": 13,
             "wrong": 5,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "before": {
             "level": 3,
-            "correct": 13,
+            "correct": 14,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "best": {
             "level": 3,
-            "correct": 12,
+            "correct": 13,
             "wrong": 0,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
           "both": {
             "level": 3,
-            "correct": 11,
+            "correct": 12,
             "wrong": 1,
-            "lastSeen": "2026-08-14",
-            "nextDue": "2026-08-21",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
             "firstSeen": "2026-07-21",
             "masteredOn": "2026-07-25"
           },
@@ -373,43 +373,47 @@
             "masteredOn": "2026-08-14"
           },
           "section": {
-            "level": 2,
-            "correct": 3,
+            "level": 3,
+            "correct": 4,
             "wrong": 1,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-25",
-            "firstSeen": "2026-08-16"
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
+            "firstSeen": "2026-08-16",
+            "masteredOn": "2026-08-29"
           },
           "direct": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 3,
             "wrong": 0,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-25",
-            "firstSeen": "2026-08-17"
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
+            "firstSeen": "2026-08-17",
+            "masteredOn": "2026-08-29"
           },
           "single": {
-            "level": 2,
-            "correct": 2,
+            "level": 3,
+            "correct": 4,
             "wrong": 0,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-25",
-            "firstSeen": "2026-08-17"
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
+            "firstSeen": "2026-08-17",
+            "masteredOn": "2026-08-29"
           },
           "effect": {
+            "level": 3,
+            "correct": 3,
+            "wrong": 0,
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-05",
+            "firstSeen": "2026-08-17",
+            "masteredOn": "2026-08-29"
+          },
+          "general": {
             "level": 2,
             "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-25",
-            "firstSeen": "2026-08-17"
-          },
-          "general": {
-            "level": 1,
-            "correct": 1,
-            "wrong": 0,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-23",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-01",
             "firstSeen": "2026-08-22"
           },
           "position": {
@@ -421,27 +425,27 @@
             "firstSeen": "2026-08-22"
           },
           "force": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-23",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-01",
             "firstSeen": "2026-08-22"
           },
           "natural": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-08-23",
-            "nextDue": "2026-08-24",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-01",
             "firstSeen": "2026-08-23"
           },
           "popular": {
-            "level": 1,
-            "correct": 1,
+            "level": 2,
+            "correct": 2,
             "wrong": 0,
-            "lastSeen": "2026-08-23",
-            "nextDue": "2026-08-24",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-09-01",
             "firstSeen": "2026-08-23"
           },
           "difficult": {
@@ -483,7 +487,7 @@
           "2026-08-17": 7,
           "2026-08-22": 8,
           "2026-08-23": 2,
-          "2026-08-29": 4
+          "2026-08-29": 25
         }
       },
       "de": {
