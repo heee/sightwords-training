@@ -413,11 +413,11 @@
             "firstSeen": "2026-08-22"
           },
           "position": {
-            "level": 0,
-            "correct": 0,
+            "level": 1,
+            "correct": 1,
             "wrong": 1,
-            "lastSeen": "2026-08-22",
-            "nextDue": "2026-08-22",
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-08-30",
             "firstSeen": "2026-08-22"
           },
           "force": {
@@ -443,6 +443,30 @@
             "lastSeen": "2026-08-23",
             "nextDue": "2026-08-24",
             "firstSeen": "2026-08-23"
+          },
+          "difficult": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-08-30",
+            "firstSeen": "2026-08-29"
+          },
+          "sentence": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-08-30",
+            "firstSeen": "2026-08-29"
+          },
+          "remember": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-08-29",
+            "nextDue": "2026-08-30",
+            "firstSeen": "2026-08-29"
           }
         },
         "days": {
@@ -458,7 +482,8 @@
           "2026-08-16": 1,
           "2026-08-17": 7,
           "2026-08-22": 8,
-          "2026-08-23": 2
+          "2026-08-23": 2,
+          "2026-08-29": 4
         }
       },
       "de": {
