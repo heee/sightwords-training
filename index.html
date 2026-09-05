@@ -58,10 +58,8 @@
 
     <div class="home-cards">
       <div class="card card-progress">
-        <div class="progress-bar-row">
-          <div class="progress-bar-track">
-            <div id="progress-bar-fill" class="progress-bar-fill"></div>
-          </div>
+        <div class="progress-chunks-row">
+          <div id="progress-chunks" class="progress-chunks"></div>
           <div id="progress-bar-label" class="progress-bar-label">0/20</div>
         </div>
         <div id="progress-encouragement" class="card-sub-text">Let's get started!</div>
@@ -101,6 +99,14 @@
         <div id="mastery-celebration-text" class="mastery-celebration-text"></div>
         <div id="mastery-celebration-sub" class="mastery-celebration-sub"></div>
       </div>
+      <div id="word-rating-panel" class="word-rating-panel hidden">
+        <p id="word-rating-prompt" class="word-rating-prompt">How tricky was that word?</p>
+        <div class="word-rating-actions">
+          <button id="btn-rate-easy" type="button" class="btn-rating" data-rating="easy"><span class="rating-emoji">😌</span><span id="rating-label-easy">Easy</span></button>
+          <button id="btn-rate-medium" type="button" class="btn-rating" data-rating="medium"><span class="rating-emoji">🙂</span><span id="rating-label-medium">OK</span></button>
+          <button id="btn-rate-hard" type="button" class="btn-rating" data-rating="hard"><span class="rating-emoji">😅</span><span id="rating-label-hard">Hard</span></button>
+        </div>
+      </div>
       <div id="sentence-panel" class="sentence-panel hidden">
         <p id="sentence-intro" class="sentence-intro">Try reading!</p>
         <p id="sentence-text" class="sentence-text"></p>
@@ -115,7 +121,7 @@
       <button id="btn-mic" type="button" class="mic-btn" aria-label="Tap to listen">
         <span class="mic-emoji">🎤</span>
       </button>
-      <p id="mic-status" class="mic-status">Tap to listen</p>
+      <p id="mic-status" class="mic-status"></p>
     </div>
 
     <div id="feedback-wrong" class="feedback-wrong hidden">
@@ -137,7 +143,16 @@
       <div id="summary-count" class="summary-count">0 / 0 correct</div>
       <div id="summary-practiced" class="card-sub-text"></div>
     </div>
-    <button id="btn-summary-home" type="button" class="btn btn-primary btn-large">Back home</button>
+    <div class="summary-actions">
+      <button id="btn-summary-home" type="button" class="btn btn-secondary btn-large btn-icon">
+        <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg>
+        <span id="btn-summary-home-label">Home</span>
+      </button>
+      <button id="btn-summary-again" type="button" class="btn btn-primary btn-large btn-icon">
+        <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4"/></svg>
+        <span id="btn-summary-again-label">Play again</span>
+      </button>
+    </div>
   </section>
 
   <!-- ============ SCREEN: SETTINGS ============ -->
@@ -152,15 +167,6 @@
     </div>
 
     <div class="settings-block">
-      <h2 id="appearance-heading" class="section-title">Appearance</h2>
-      <label id="label-theme" class="field-label">Theme</label>
-      <div id="theme-toggle" class="lang-toggle" role="tablist">
-        <button type="button" id="theme-btn-light" class="lang-btn theme-btn active" data-theme="light">☀️ Light</button>
-        <button type="button" id="theme-btn-dark" class="lang-btn theme-btn" data-theme="dark">🌙 Dark</button>
-      </div>
-    </div>
-
-    <div class="settings-block">
       <h2 id="general-heading" class="section-title">General</h2>
       <label id="label-avatar" class="field-label">Avatar</label>
       <p id="avatar-progress-text" class="settings-hint">0 words mastered combined</p>
@@ -172,6 +178,12 @@
         <button type="button" id="german-toggle-on" class="lang-btn german-toggle-btn" data-german="on">On</button>
       </div>
 
+      <label id="label-word-rating" class="field-label">Rate word difficulty</label>
+      <div id="word-rating-toggle" class="lang-toggle" role="tablist">
+        <button type="button" id="word-rating-toggle-off" class="lang-btn word-rating-toggle-btn" data-rating="off">Off</button>
+        <button type="button" id="word-rating-toggle-on" class="lang-btn word-rating-toggle-btn active" data-rating="on">On</button>
+      </div>
+
       <label id="label-kid-name" class="field-label">Kid's name</label>
       <input id="settings-kid-name" class="text-input" type="text" maxlength="40">
 
@@ -180,8 +192,6 @@
 
       <label id="label-new-words-per-day" class="field-label">New words per day</label>
       <input id="settings-new-words-per-day" class="text-input" type="number" min="0" max="10" inputmode="numeric">
-
-      <button id="btn-settings-save" type="button" class="btn btn-primary btn-large">Save settings</button>
     </div>
 
     <div class="settings-block">

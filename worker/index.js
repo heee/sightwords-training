@@ -10,9 +10,9 @@
 //                               days[day] = max(existing, dayCount). Creates the kid if missing.
 //   POST /register-kid   -> { kid } -> creates an empty kid record with default settings if absent
 //   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay,
-//                              levels: { en: "prek"|"g1"|"g23"|"g4"|"g5"|"g6",
+//                              levels: { en: "kg"|"prek"|"g1"|"g23"|"g4"|"g5"|"g6",
 //                                        de: "prek"|"k1"|"k2"|"k3"|"k4"|"k5"|"k6" },
-//                              germanEnabled?: boolean }, rename?, emoji? }
+//                              germanEnabled?: boolean, wordRatingEnabled?: boolean }, rename?, emoji? }
 //                            -> clamps ranges (5-50, 0-10); invalid/missing levels fall back to
 //                               defaults ("prek"/"prek"); rename moves the whole kid record;
 //                               emoji must be one of KID_EMOJIS or it's ignored; germanEnabled
@@ -150,12 +150,14 @@ export default {
       // Optional — any other type (missing, string, number, etc.) is simply
       // ignored (not persisted), same as the default/unset state.
       const germanEnabledProvided = typeof body?.settings?.germanEnabled === "boolean";
+      const wordRatingEnabledProvided = typeof body?.settings?.wordRatingEnabled === "boolean";
 
       try {
         await commitMutation(env, (data) => {
           if (!data.kids[kid]) data.kids[kid] = emptyKid();
           const newSettings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe } };
           if (germanEnabledProvided) newSettings.germanEnabled = body.settings.germanEnabled;
+          if (wordRatingEnabledProvided) newSettings.wordRatingEnabled = body.settings.wordRatingEnabled;
           data.kids[kid].settings = newSettings;
           if (emoji) data.kids[kid].emoji = emoji;
           if (rename && rename !== kid) {

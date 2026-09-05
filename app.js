@@ -21,7 +21,6 @@ const APP_KEY = "ew6hl1snory5udxf7zvbkj4g98cm";
 
 const LS = {
   lang: "swt-lang",
-  theme: "swt-theme",
   lastKid: "swt-last-kid",
   cacheData: "swt-cache-data",
   pendingQueue: "swt-pending-queue",
@@ -84,7 +83,6 @@ function unlockedTierCount(everMastered) {
 
 const state = {
   lang: localStorage.getItem(LS.lang) || "en",
-  theme: localStorage.getItem(LS.theme) || "light",
   currentKid: localStorage.getItem(LS.lastKid) || "",
   screen: "screen-picker",
   // Shuffled order of the non-last-selected kids on the picker screen —
@@ -101,6 +99,10 @@ const state = {
   sentenceMatchedIdx: null,
   recognizing: false,
   autoAdvanceTimer: null,
+  // Set while the word-difficulty rating intermission is showing (see
+  // showWordRating) — the word it's rating and what to do once rated.
+  pendingRatingWord: null,
+  pendingRatingCallback: null,
   // Cloud speech (Groq) recording state — session-scoped, released on
   // session end / screen change (see releaseMic()).
   micStream: null,
@@ -112,16 +114,6 @@ const state = {
   micRecordTimer: null,
 };
 
-// Theme is a user choice (Settings > Appearance), not derived from the
-// device's system setting — defaults to light on first launch regardless
-// of OS dark mode, so it looks the same on every device until changed.
-function applyTheme(theme) {
-  state.theme = theme;
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem(LS.theme, theme);
-  document.querySelectorAll(".theme-btn").forEach((b) => b.classList.toggle("active", b.dataset.theme === theme));
-}
-applyTheme(state.theme);
 
 // ------------------- small helpers -------------------
 
@@ -240,6 +232,10 @@ const T = {
     micDenied: "Microphone access is needed — allow it in Settings and try again.",
     correctCheer: "Yes! 🎉",
     notQuite: "Not quite!",
+    wordRatingPrompt: "How tricky was that word?",
+    ratingEasy: "Easy",
+    ratingOk: "OK",
+    ratingHard: "Hard",
     noSpeechHeard: "I didn't hear you — try again!",
     hearWord: "🔊 Hear the word",
     markCorrect: "✅ I said it right!",
@@ -250,12 +246,9 @@ const T = {
     sessionComplete: "Session complete!",
     correctCount: (c, p) => `${c} / ${p} correct`,
     practicedCount: (n) => `You practiced ${n} word${n === 1 ? "" : "s"} this session.`,
-    backHome: "Back home",
+    backHome: "Home",
+    playAgain: "Play again",
     settingsTitle: "Settings",
-    appearance: "Appearance",
-    theme: "Theme",
-    themeLight: "☀️ Light",
-    themeDark: "🌙 Dark",
     general: "General",
     avatarLabel: "Avatar",
     avatarProgress: (n) => `${n} word${n === 1 ? "" : "s"} mastered combined`,
@@ -280,10 +273,9 @@ const T = {
     levelDeK5: "Grade 5",
     levelDeK6: "Grade 6",
     enableGerman: "🇩🇪 Enable German",
+    wordRatingLabel: "Rate word difficulty",
     off: "Off",
     on: "On",
-    saveSettings: "Save settings",
-    settingsSaved: "Settings saved! ✅",
     nameUsedByAnother: "That name is already used by another kid.",
     wordMastery: "Word mastery",
     levelNew: "New",
@@ -337,6 +329,10 @@ const T = {
     micDenied: "Mikrofonzugriff wird benötigt — bitte in den Einstellungen erlauben und nochmal versuchen.",
     correctCheer: "Richtig! 🎉",
     notQuite: "Nicht ganz!",
+    wordRatingPrompt: "Wie schwer war das Wort?",
+    ratingEasy: "Leicht",
+    ratingOk: "OK",
+    ratingHard: "Schwer",
     noSpeechHeard: "Ich habe dich nicht gehört — versuch's nochmal!",
     hearWord: "🔊 Wort anhören",
     markCorrect: "✅ Ich hab's richtig gesagt!",
@@ -347,12 +343,9 @@ const T = {
     sessionComplete: "Sitzung abgeschlossen!",
     correctCount: (c, p) => `${c} / ${p} richtig`,
     practicedCount: (n) => `Du hast in dieser Sitzung ${n} ${n === 1 ? "Wort" : "Wörter"} geübt.`,
-    backHome: "Zurück",
+    backHome: "Start",
+    playAgain: "Nochmal",
     settingsTitle: "Einstellungen",
-    appearance: "Darstellung",
-    theme: "Design",
-    themeLight: "☀️ Hell",
-    themeDark: "🌙 Dunkel",
     general: "Allgemein",
     avatarLabel: "Avatar",
     avatarProgress: (n) => `${n} ${n === 1 ? "Wort" : "Wörter"} gemeistert (kombiniert)`,
@@ -377,10 +370,9 @@ const T = {
     levelDeK5: "Klasse 5",
     levelDeK6: "Klasse 6",
     enableGerman: "🇩🇪 Deutsch aktivieren",
+    wordRatingLabel: "Wortschwierigkeit bewerten",
     off: "Aus",
     on: "An",
-    saveSettings: "Einstellungen speichern",
-    settingsSaved: "Einstellungen gespeichert! ✅",
     nameUsedByAnother: "Dieser Name wird bereits von einem anderen Kind verwendet.",
     wordMastery: "Wortbeherrschung",
     levelNew: "Neu",
@@ -444,23 +436,27 @@ function applyStaticTranslations() {
   $("btn-sentence-continue").textContent = t("sentenceContinue");
   $("btn-sentence-i-read-it").textContent = t("sentenceIReadIt");
 
+  $("word-rating-prompt").textContent = t("wordRatingPrompt");
+  $("rating-label-easy").textContent = t("ratingEasy");
+  $("rating-label-medium").textContent = t("ratingOk");
+  $("rating-label-hard").textContent = t("ratingHard");
+
   $("summary-title").textContent = t("sessionComplete");
-  $("btn-summary-home").textContent = t("backHome");
+  $("btn-summary-home-label").textContent = t("backHome");
+  $("btn-summary-again-label").textContent = t("playAgain");
 
   $("settings-heading").textContent = t("settingsTitle");
-  $("appearance-heading").textContent = t("appearance");
-  $("label-theme").textContent = t("theme");
-  $("theme-btn-light").textContent = t("themeLight");
-  $("theme-btn-dark").textContent = t("themeDark");
   $("general-heading").textContent = t("general");
   $("label-avatar").textContent = t("avatarLabel");
   $("label-enable-german").textContent = t("enableGerman");
   $("german-toggle-off").textContent = t("off");
   $("german-toggle-on").textContent = t("on");
+  $("label-word-rating").textContent = t("wordRatingLabel");
+  $("word-rating-toggle-off").textContent = t("off");
+  $("word-rating-toggle-on").textContent = t("on");
   $("label-kid-name").textContent = t("kidName");
   $("label-words-per-session").textContent = t("wordsPerSession");
   $("label-new-words-per-day").textContent = t("newWordsPerDay");
-  $("btn-settings-save").textContent = t("saveSettings");
   $("mastery-title-text").textContent = t("wordMastery");
   $("btn-settings-back").setAttribute("aria-label", t("back"));
   $("btn-settings-back").title = t("back");
@@ -843,6 +839,35 @@ function recordAnswer(word, correct) {
   }
 
   return { justMastered: !wasMastered && !!newEntry.masteredOn };
+}
+
+// Adjusts a just-recorded correct answer's next-due interval based on the
+// kid's own Easy/Medium/Hard rating (see the word-rating intermission) —
+// Easy pushes the review further out, Hard pulls it closer in, Medium
+// leaves recordAnswer's default interval as-is. Runs as a follow-up patch
+// after recordAnswer rather than a parameter to it, so the base spaced-
+// repetition logic stays untouched when the rating feature is off.
+const DIFFICULTY_INTERVAL_FACTOR = { easy: 1.5, medium: 1, hard: 0.5 };
+
+function applyDifficultyRating(word, difficulty) {
+  const s = state.session;
+  if (!s) return;
+  const data = getData();
+  const langData = data.kids[s.kid][s.lang];
+  const entry = langData.words[word];
+  if (!entry) return;
+  const baseInterval = { 1: 1, 2: 3, 3: 7 }[entry.level] || 1;
+  const factor = DIFFICULTY_INTERVAL_FACTOR[difficulty] || 1;
+  entry.nextDue = addDays(s.today, Math.max(1, Math.round(baseInterval * factor)));
+  entry.lastDifficulty = difficulty;
+  s.wordUpdates[word] = entry;
+  setData(data);
+
+  queueOp({
+    type: "progress",
+    key: `progress:${s.kid}:${s.lang}`,
+    payload: { kid: s.kid, lang: s.lang, words: { ...s.wordUpdates }, day: s.today, dayCount: s.dayCountBase + s.practicedCount },
+  });
 }
 
 function endSession() {
@@ -1256,7 +1281,7 @@ async function startCloudListening() {
     stream = await ensureMicStream();
   } catch (e) {
     toast(t("micDenied"));
-    $("mic-status").textContent = t("tapToListen");
+    $("mic-status").textContent = "";
     return;
   }
 
@@ -1377,7 +1402,7 @@ async function finishCloudRecording(blob, peakRms) {
     cloudSpeechDisabled = true;
     state.micBusy = false;
     if (speechSupported) {
-      $("mic-status").textContent = t("tapToListen");
+      $("mic-status").textContent = "";
     } else {
       $("speech-unsupported-banner").classList.remove("hidden");
       $("btn-mic").disabled = true;
@@ -1474,32 +1499,19 @@ function setLang(lang) {
 
 document.querySelectorAll(".lang-toggle").forEach((toggle) => {
   toggle.addEventListener("click", (e) => {
-    const btn = e.target.closest(".lang-btn:not(.theme-btn)");
+    const btn = e.target.closest(".lang-btn");
     if (!btn || !btn.dataset.lang) return;
     setLang(btn.dataset.lang);
   });
 });
 
-$("theme-toggle").addEventListener("click", (e) => {
-  const btn = e.target.closest(".theme-btn");
-  if (!btn) return;
-  applyTheme(btn.dataset.theme);
-});
-
-// Settings-only UI toggle (not persisted until Save) — selects the Off/On
-// button for live feedback, exactly like the theme toggle's own visual
-// pattern.
+// Selects the Off/On button for live feedback; the click listener further
+// down (near the other settings fields) does the actual persisting.
 function setGermanToggleUI(isOn) {
   document.querySelectorAll("#german-toggle .german-toggle-btn").forEach((b) => {
     b.classList.toggle("active", (b.dataset.german === "on") === isOn);
   });
 }
-
-$("german-toggle").addEventListener("click", (e) => {
-  const btn = e.target.closest(".german-toggle-btn");
-  if (!btn) return;
-  setGermanToggleUI(btn.dataset.german === "on");
-});
 
 // ---- picker screen ----
 
@@ -1594,8 +1606,7 @@ function renderHome() {
 
   const todayCount = langData.days[today] || 0;
   const goal = kidRecord.settings.wordsPerSession;
-  const pct = goal > 0 ? Math.min(1, todayCount / goal) : 0;
-  $("progress-bar-fill").style.width = `${pct * 100}%`;
+  renderProgressChunks(todayCount, goal);
   $("progress-bar-label").textContent = `${todayCount}/${goal}`;
   $("progress-encouragement").textContent = todayCount === 0
     ? t("letsStart")
@@ -1604,6 +1615,17 @@ function renderHome() {
     : t("toGo", goal - todayCount);
 
   renderWeeklyChart(langData, today);
+}
+
+// One square per word in today's goal, filled left to right as the kid
+// practices — a chunked countdown instead of a continuous fill, which reads
+// more concretely to a kid than a percentage-style bar. Overflow past the
+// goal (a session that ran long) just leaves every square filled.
+function renderProgressChunks(count, goal) {
+  const n = Math.max(0, goal);
+  $("progress-chunks").innerHTML = Array.from({ length: n }, (_, i) =>
+    `<span class="progress-chunk${i < count ? " filled" : ""}"></span>`
+  ).join("");
 }
 
 // Bar chart of the last 7 days (oldest to newest, ending today): height and
@@ -1647,7 +1669,7 @@ function renderWeeklyChart(langData, today) {
   }).join("");
 }
 
-$("btn-start-practice").addEventListener("click", () => {
+function startPracticeSession() {
   startSession(state.currentKid, state.lang);
   if (!state.session || state.session.queue.length === 0) {
     toast(t("noWordsAvailable"));
@@ -1656,7 +1678,9 @@ $("btn-start-practice").addEventListener("click", () => {
   }
   showScreen("screen-practice");
   prewarmMic();
-});
+}
+
+$("btn-start-practice").addEventListener("click", startPracticeSession);
 
 // ---- practice screen ----
 
@@ -1676,9 +1700,12 @@ function renderPracticeWord() {
   else if (len >= 7) wordEl.classList.add("len-lg");
   else if (len >= 5) wordEl.classList.add("len-md");
   $("practice-prompt").textContent = t("whatWord");
-  $("mic-status").textContent = (cloudModeActive() || speechSupported) ? t("tapToListen") : "";
+  $("mic-status").textContent = "";
   $("feedback-wrong").classList.add("hidden");
   $("mastery-celebration").classList.add("hidden");
+  hideWordRating();
+  state.pendingRatingWord = null;
+  state.pendingRatingCallback = null;
   if (state.sentenceActive) hideSentencePanel();
   updateMicWrongState(false);
   state.session.lastWrongWord = null;
@@ -1830,6 +1857,7 @@ function showMasteryCelebration(word) {
 function advanceSessionAndRender() {
   clearTimeout(state.autoAdvanceTimer);
   $("feedback-wrong").classList.add("hidden");
+  hideWordRating();
   if (!state.session) return;
   state.session.index++;
   if (state.session.index >= state.session.queue.length) {
@@ -1838,6 +1866,34 @@ function advanceSessionAndRender() {
     renderPracticeWord();
   }
 }
+
+// Whether the kid should be asked to rate a word's difficulty right after
+// answering it correctly — a Settings toggle, default on.
+function wordRatingEnabledFor(kidRecord) {
+  return !kidRecord || kidRecord.settings.wordRatingEnabled !== false;
+}
+
+function showWordRating(word, onDone) {
+  state.pendingRatingWord = word;
+  state.pendingRatingCallback = onDone;
+  $("word-rating-panel").classList.remove("hidden");
+}
+
+function hideWordRating() {
+  $("word-rating-panel").classList.add("hidden");
+}
+
+document.querySelectorAll(".btn-rating").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const word = state.pendingRatingWord;
+    const onDone = state.pendingRatingCallback;
+    hideWordRating();
+    state.pendingRatingWord = null;
+    state.pendingRatingCallback = null;
+    if (word) applyDifficultyRating(word, btn.dataset.rating);
+    if (onDone) onDone();
+  });
+});
 
 function handleCorrect() {
   const word = currentWord();
@@ -1850,8 +1906,16 @@ function handleCorrect() {
     return;
   }
   $("mic-status").textContent = t("correctCheer");
-  const dueForSentence = s.practicedCount > 0 && s.practicedCount % SENTENCE_EVERY_N === 0;
-  setTimeout(() => { dueForSentence ? maybeShowSentence() : advanceSessionAndRender(); }, 1200);
+  const proceed = () => {
+    const dueForSentence = s.practicedCount > 0 && s.practicedCount % SENTENCE_EVERY_N === 0;
+    dueForSentence ? maybeShowSentence() : advanceSessionAndRender();
+  };
+  const data = getData();
+  if (wordRatingEnabledFor(data.kids[s.kid])) {
+    setTimeout(() => showWordRating(word, proceed), 700);
+  } else {
+    setTimeout(proceed, 1200);
+  }
 }
 
 function handleWrong() {
@@ -1924,7 +1988,12 @@ function handleMarkCorrect() {
     showMasteryCelebration(word);
   } else {
     $("mic-status").textContent = t("correctCheer");
-    state.autoAdvanceTimer = setTimeout(() => { advanceSessionAndRender(); }, 1200);
+    const data = getData();
+    if (wordRatingEnabledFor(data.kids[s.kid])) {
+      state.autoAdvanceTimer = setTimeout(() => showWordRating(word, () => advanceSessionAndRender()), 700);
+    } else {
+      state.autoAdvanceTimer = setTimeout(() => { advanceSessionAndRender(); }, 1200);
+    }
   }
 }
 
@@ -2000,6 +2069,7 @@ function showSummary(s) {
 }
 
 $("btn-summary-home").addEventListener("click", () => showScreen("screen-home"));
+$("btn-summary-again").addEventListener("click", startPracticeSession);
 
 // ---- settings screen ----
 
@@ -2030,6 +2100,7 @@ $("emoji-picker").addEventListener("click", (e) => {
   const btn = e.target.closest(".emoji-btn");
   if (!btn || btn.disabled) return;
   $("emoji-picker").querySelectorAll(".emoji-btn").forEach((b) => b.classList.toggle("selected", b === btn));
+  persistCurrentSettings();
 });
 
 // Reading-level picker labels per (language, level id) — a small lookup into
@@ -2090,6 +2161,7 @@ function renderSettings() {
   // kid with prior German progress but an unset germanEnabled field still
   // shows "On" correctly.
   setGermanToggleUI(germanUnlockedFor(kidRecord));
+  setWordRatingToggleUI(kidRecord.settings.wordRatingEnabled !== false);
 
   $("confirm-reset").classList.add("hidden");
   $("confirm-delete-kid").classList.add("hidden");
@@ -2156,23 +2228,27 @@ function renderMastery() {
   `).join("");
 }
 
-$("btn-settings-save").addEventListener("click", async () => {
+// Every settings control saves itself the moment it changes — there's no
+// separate "Save" step. Each listener below just calls this after updating
+// its own bit of UI state.
+async function persistCurrentSettings() {
   const oldName = state.currentKid;
   const requestedName = $("settings-kid-name").value.trim().slice(0, 40);
   const newName = requestedName || oldName;
   const wordsPerSession = clampNum(parseInt($("settings-words-per-session").value, 10), 5, 50, DEFAULT_SETTINGS.wordsPerSession);
   const newWordsPerDay = clampNum(parseInt($("settings-new-words-per-day").value, 10), 0, 10, DEFAULT_SETTINGS.newWordsPerDay);
   const germanEnabled = $("german-toggle").querySelector(".german-toggle-btn.active")?.dataset.german === "on";
+  const wordRatingEnabled = $("word-rating-toggle").querySelector(".word-rating-toggle-btn.active")?.dataset.rating !== "off";
   // Reading level is set live from the home screen, not here — carry the
   // kid's current levels through unchanged.
   const existingLevels = getData().kids[oldName]?.settings?.levels || DEFAULT_SETTINGS.levels;
-  const settings = { wordsPerSession, newWordsPerDay, levels: { ...existingLevels }, germanEnabled };
+  const settings = { wordsPerSession, newWordsPerDay, levels: { ...existingLevels }, germanEnabled, wordRatingEnabled };
   const emoji = $("emoji-picker").querySelector(".emoji-btn.selected")?.dataset.emoji || "";
 
   const data = getData();
   const rename = newName !== oldName ? newName : undefined;
   if (rename) {
-    if (data.kids[rename]) { toast(t("nameUsedByAnother")); return; }
+    if (data.kids[rename]) { toast(t("nameUsedByAnother")); $("settings-kid-name").value = oldName; return; }
     data.kids[rename] = data.kids[oldName];
     delete data.kids[oldName];
   }
@@ -2189,8 +2265,31 @@ $("btn-settings-save").addEventListener("click", async () => {
   queueOp({ type: "settings", key: `settings:${oldName}`, payload: { kid: oldName, settings, rename, emoji } });
   await flushQueue().catch(() => {});
 
-  toast(t("settingsSaved"));
   renderSettings();
+}
+
+$("settings-kid-name").addEventListener("change", persistCurrentSettings);
+$("settings-words-per-session").addEventListener("change", persistCurrentSettings);
+$("settings-new-words-per-day").addEventListener("change", persistCurrentSettings);
+
+$("german-toggle").addEventListener("click", (e) => {
+  const btn = e.target.closest(".german-toggle-btn");
+  if (!btn) return;
+  setGermanToggleUI(btn.dataset.german === "on");
+  persistCurrentSettings();
+});
+
+function setWordRatingToggleUI(isOn) {
+  document.querySelectorAll("#word-rating-toggle .word-rating-toggle-btn").forEach((b) => {
+    b.classList.toggle("active", (b.dataset.rating === "on") === isOn);
+  });
+}
+
+$("word-rating-toggle").addEventListener("click", (e) => {
+  const btn = e.target.closest(".word-rating-toggle-btn");
+  if (!btn) return;
+  setWordRatingToggleUI(btn.dataset.rating === "on");
+  persistCurrentSettings();
 });
 
 $("btn-reset-progress").addEventListener("click", () => $("confirm-reset").classList.remove("hidden"));
