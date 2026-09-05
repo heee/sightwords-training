@@ -5,7 +5,7 @@
         "wordsPerSession": 22,
         "newWordsPerDay": 5,
         "levels": {
-          "en": "g4",
+          "en": "prek",
           "de": "k1"
         },
         "germanEnabled": true,
