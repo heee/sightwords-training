@@ -52,7 +52,7 @@ const MIN_WORDS_PER_SESSION = 5;
 const MAX_NEW_WORDS_PER_DAY = 10;
 const MIN_NEW_WORDS_PER_DAY = 0;
 const VALID_LEVELS = {
-  en: ["prek", "g1", "g23", "g4", "g5", "g6"],
+  en: ["kg", "prek", "g1", "g23", "g4", "g5", "g6"],
   de: ["prek", "k1", "k2", "k3", "k4", "k5", "k6"],
 };
 

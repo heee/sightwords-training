@@ -32,11 +32,6 @@
       <h1 class="screen-title">Sight Words</h1>
       <p id="picker-sub" class="screen-sub">Pick your reader, or add someone new!</p>
 
-      <div id="picker-lang-toggle" class="lang-toggle" role="tablist">
-        <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇺🇸 English</button>
-        <button type="button" class="lang-btn" data-lang="de" aria-label="Deutsch">🇩🇪 Deutsch</button>
-      </div>
-
       <div id="kid-list" class="kid-list"></div>
 
       <form id="new-kid-form" class="new-kid-form hidden">
@@ -52,9 +47,6 @@
   <!-- ============ SCREEN: HOME ============ -->
   <section id="screen-home" class="screen">
     <div class="home-topbar">
-      <div class="home-topbar-left">
-        <button id="btn-words-i-know" type="button" class="icon-btn" aria-label="Words I know" title="Words I know">📚</button>
-      </div>
       <div id="home-lang-toggle" class="lang-toggle lang-toggle-compact" role="tablist">
         <button type="button" class="lang-btn active" data-lang="en" aria-label="English">🇺🇸</button>
         <button type="button" class="lang-btn" data-lang="de" aria-label="Deutsch">🇩🇪</button>
@@ -65,11 +57,6 @@
     <h1 id="home-greeting" class="screen-title">Hi there! 👋</h1>
 
     <div class="home-cards">
-      <div id="card-streak" class="card card-streak">
-        <div id="streak-icon" class="card-icon">🔥</div>
-        <div id="streak-text" class="card-big-text">0 day streak</div>
-      </div>
-
       <div class="card card-progress">
         <div class="progress-bar-row">
           <div class="progress-bar-track">
@@ -87,6 +74,9 @@
         <div id="weekly-chart" class="weekly-chart"></div>
       </div>
     </div>
+
+    <label id="label-home-level" class="field-label">Reading level</label>
+    <div id="home-level-picker" class="level-picker home-level-picker" role="tablist"></div>
 
     <button id="btn-start-practice" type="button" class="btn-start">Start practice ▶</button>
   </section>
@@ -191,14 +181,6 @@
       <label id="label-new-words-per-day" class="field-label">New words per day</label>
       <input id="settings-new-words-per-day" class="text-input" type="number" min="0" max="10" inputmode="numeric">
 
-      <label id="label-level-en" class="field-label">Reading level 🇺🇸</label>
-      <div id="level-picker-en" class="level-picker" role="tablist"></div>
-
-      <div id="german-level-block" class="hidden">
-        <label id="label-level-de" class="field-label">Reading level 🇩🇪</label>
-        <div id="level-picker-de" class="level-picker" role="tablist"></div>
-      </div>
-
       <button id="btn-settings-save" type="button" class="btn btn-primary btn-large">Save settings</button>
     </div>
 
@@ -235,18 +217,6 @@
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- ============ SCREEN: WORDS I KNOW ============ -->
-  <section id="screen-words-i-know" class="screen">
-    <div class="settings-topbar">
-      <button id="words-i-know-back" type="button" class="icon-btn" aria-label="Back" title="Back">←</button>
-      <h1 id="words-i-know-heading" class="screen-title settings-title">Words I Know</h1>
-    </div>
-
-    <p id="words-i-know-sub" class="screen-sub"></p>
-
-    <div id="words-i-know-list" class="words-i-know-list"></div>
   </section>
 
 </div>

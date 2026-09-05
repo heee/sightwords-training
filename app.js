@@ -224,15 +224,12 @@ const T = {
     switchKid: "Switch kid",
     settings: "Settings",
     greeting: (kid, emoji) => `Hi, ${kid}! ${emoji}`,
-    streak: (n) => `${n} day${n === 1 ? "" : "s"} streak`,
     letsStart: "Let's get started!",
     goalReached: "Goal reached! 🎉",
     goalExceeded: (n) => `Goal smashed — ${n} extra! 🌟`,
     toGo: (n) => `${n} to go!`,
     last7Days: "Last 7 days",
-    wordsIKnow: "Words I Know",
-    wordsIKnowCount: (n) => n === 0 ? "Your collection is just getting started!" : `${n} word${n === 1 ? "" : "s"} in your collection!`,
-    noWordsYet: "Practice a few words to start your collection!",
+    levelLabelHome: "Reading level",
     wordsCount: (n) => `${n} word${n === 1 ? "" : "s"}`,
     startPractice: "Start practice ▶",
     speechUnsupported: "Speech isn't available here — open this page in Safari.",
@@ -268,8 +265,6 @@ const T = {
     kidName: "Kid's name",
     wordsPerSession: "Words per session",
     newWordsPerDay: "New words per day",
-    levelLabelEn: "Reading level 🇺🇸",
-    levelLabelDe: "Reading level 🇩🇪",
     levelEnKg: "Kindergarten",
     levelEnPrek: "Pre-K / K",
     levelEnG1: "1st grade",
@@ -326,15 +321,12 @@ const T = {
     switchKid: "Kind wechseln",
     settings: "Einstellungen",
     greeting: (kid, emoji) => `Hallo, ${kid}! ${emoji}`,
-    streak: (n) => `${n} Tag${n === 1 ? "" : "e"} Serie`,
     letsStart: "Los geht's!",
     goalReached: "Ziel erreicht! 🎉",
     goalExceeded: (n) => `Ziel übertroffen — ${n} extra! 🌟`,
     toGo: (n) => `Noch ${n}!`,
     last7Days: "Letzte 7 Tage",
-    wordsIKnow: "Meine Wörter",
-    wordsIKnowCount: (n) => n === 0 ? "Deine Sammlung fängt gerade erst an!" : `${n} ${n === 1 ? "Wort" : "Wörter"} in deiner Sammlung!`,
-    noWordsYet: "Übe ein paar Wörter, um deine Sammlung zu starten!",
+    levelLabelHome: "Lesestufe",
     wordsCount: (n) => `${n} ${n === 1 ? "Wort" : "Wörter"}`,
     startPractice: "Übung starten ▶",
     speechUnsupported: "Spracherkennung ist hier nicht verfügbar — öffne diese Seite in Safari.",
@@ -370,8 +362,6 @@ const T = {
     kidName: "Name des Kindes",
     wordsPerSession: "Wörter pro Sitzung",
     newWordsPerDay: "Neue Wörter pro Tag",
-    levelLabelEn: "Lesestufe 🇺🇸",
-    levelLabelDe: "Lesestufe 🇩🇪",
     levelEnKg: "Kindergarten",
     levelEnPrek: "Vorschule",
     levelEnG1: "1. Klasse",
@@ -441,11 +431,7 @@ function applyStaticTranslations() {
   $("btn-open-settings").title = t("settings");
   $("btn-start-practice").textContent = t("startPractice");
   $("weekly-chart-title").textContent = t("last7Days");
-  $("btn-words-i-know").setAttribute("aria-label", t("wordsIKnow"));
-  $("btn-words-i-know").title = t("wordsIKnow");
-  $("words-i-know-heading").textContent = t("wordsIKnow");
-  $("words-i-know-back").setAttribute("aria-label", t("back"));
-  $("words-i-know-back").title = t("back");
+  $("label-home-level").textContent = t("levelLabelHome");
 
   $("speech-unsupported-banner").textContent = t("speechUnsupported");
   $("btn-mic").setAttribute("aria-label", t("tapToListen"));
@@ -474,9 +460,6 @@ function applyStaticTranslations() {
   $("label-kid-name").textContent = t("kidName");
   $("label-words-per-session").textContent = t("wordsPerSession");
   $("label-new-words-per-day").textContent = t("newWordsPerDay");
-  $("label-level-en").textContent = t("levelLabelEn");
-  $("label-level-de").textContent = t("levelLabelDe");
-  renderLevelPickers();
   $("btn-settings-save").textContent = t("saveSettings");
   $("mastery-title-text").textContent = t("wordMastery");
   $("btn-settings-back").setAttribute("aria-label", t("back"));
@@ -572,18 +555,6 @@ function addNewIntroducedToday(kid, lang, today, n) {
   const rec = map[key];
   map[key] = { date: today, count: rec && rec.date === today ? rec.count + n : n };
   localStorage.setItem(LS.newCount, JSON.stringify(map));
-}
-
-function computeStreak(days, today) {
-  const hasDay = (d) => (days[d] || 0) > 0;
-  let cursor = today;
-  if (!hasDay(cursor)) cursor = addDays(cursor, -1);
-  let streak = 0;
-  while (hasDay(cursor)) {
-    streak++;
-    cursor = addDays(cursor, -1);
-  }
-  return streak;
 }
 
 // ------------------- sync layer (Cloudflare Worker + offline queue) -------------------
@@ -1485,7 +1456,6 @@ function showScreen(id) {
   if (id === "screen-home") renderHome();
   if (id === "screen-settings") renderSettings();
   if (id === "screen-practice") renderPracticeWord();
-  if (id === "screen-words-i-know") renderWordsIKnow();
 }
 
 function syncLangToggles() {
@@ -1500,7 +1470,6 @@ function setLang(lang) {
   if (state.screen === "screen-picker") renderPicker();
   if (state.screen === "screen-home") renderHome();
   if (state.screen === "screen-settings") renderSettings();
-  if (state.screen === "screen-words-i-know") renderWordsIKnow();
 }
 
 document.querySelectorAll(".lang-toggle").forEach((toggle) => {
@@ -1518,13 +1487,12 @@ $("theme-toggle").addEventListener("click", (e) => {
 });
 
 // Settings-only UI toggle (not persisted until Save) — selects the Off/On
-// button and shows/hides the German reading-level picker block for live
-// feedback, exactly like the theme toggle's own visual pattern.
+// button for live feedback, exactly like the theme toggle's own visual
+// pattern.
 function setGermanToggleUI(isOn) {
   document.querySelectorAll("#german-toggle .german-toggle-btn").forEach((b) => {
     b.classList.toggle("active", (b.dataset.german === "on") === isOn);
   });
-  $("german-level-block").classList.toggle("hidden", !isOn);
 }
 
 $("german-toggle").addEventListener("click", (e) => {
@@ -1536,20 +1504,7 @@ $("german-toggle").addEventListener("click", (e) => {
 // ---- picker screen ----
 
 function renderPicker() {
-  syncLangToggles();
   const data = getData();
-
-  // The German button is only shown if at least one kid on this device has
-  // German unlocked — otherwise hide it, and if the picker is currently
-  // stuck showing German UI with no way to switch, snap back to English.
-  const anyGermanUnlocked = Object.values(data.kids).some((k) => germanUnlockedFor(k));
-  $("picker-lang-toggle").querySelector('.lang-btn[data-lang="de"]').classList.toggle("hidden", !anyGermanUnlocked);
-  if (!anyGermanUnlocked && state.lang === "de") {
-    state.lang = "en";
-    localStorage.setItem(LS.lang, "en");
-    syncLangToggles();
-    applyStaticTranslations();
-  }
 
   const allNames = Object.keys(data.kids);
   const lastSelected = state.currentKid && allNames.includes(state.currentKid) ? state.currentKid : null;
@@ -1635,10 +1590,7 @@ function renderHome() {
 
   $("home-greeting").textContent = t("greeting", kid, kidEmojiFor(kidRecord, kid));
 
-  const streak = computeStreak(langData.days, today);
-  $("streak-text").textContent = t("streak", streak);
-  $("streak-icon").textContent = streak === 0 ? "🧊" : "🔥";
-  $("card-streak").classList.toggle("no-streak", streak === 0);
+  renderHomeLevelPicker(kidRecord, lang);
 
   const todayCount = langData.days[today] || 0;
   const goal = kidRecord.settings.wordsPerSession;
@@ -1660,10 +1612,14 @@ function renderHome() {
 // counter driving the streak and daily-goal bar elsewhere on this screen.
 //
 // Scaled relative to THIS WEEK'S OWN busiest day (not the daily goal): the
-// tallest bar always reaches MAX_BAR_PX, every other day is a proportional
-// fraction of it, so one standout day (like a big practice binge) reads as
-// dramatically taller rather than everything looking similarly "capped".
+// tallest bar always reaches MAX_BAR_PX minus BAR_LABEL_RESERVE_PX, every
+// other day is a proportional fraction of it, so one standout day (like a
+// big practice binge) reads as dramatically taller rather than everything
+// looking similarly "capped". The reserve keeps the count label that floats
+// above the tallest bar inside the track's own box instead of bleeding up
+// into the "Last 7 days" header above it.
 const MAX_BAR_PX = 96;
+const BAR_LABEL_RESERVE_PX = 20;
 
 function renderWeeklyChart(langData, today) {
   const days = [];
@@ -1673,17 +1629,16 @@ function renderWeeklyChart(langData, today) {
 
   $("weekly-chart").innerHTML = days.map((d, i) => {
     const count = counts[i];
-    // Any real practice gets at least a sliver of a visible bar — only a
-    // true zero renders as nothing, per the "sit almost on top of the day
-    // label" zero-day treatment.
-    const px = count === 0 ? 0 : Math.max(4, Math.round((count / scaleMax) * MAX_BAR_PX));
+    // Every day gets at least a sliver of a visible bar, even a true zero —
+    // but only days with real practice get a count label above the bar.
+    const px = count === 0 ? 4 : Math.max(6, Math.round((count / scaleMax) * (MAX_BAR_PX - BAR_LABEL_RESERVE_PX)));
     const [y, m, dd] = d.split("-").map(Number);
     const weekday = WEEKDAY_LABELS[state.lang][new Date(y, m - 1, dd).getDay()];
     const isToday = d === today;
     return `
       <div class="weekly-bar-col${isToday ? " is-today" : ""}">
         <div class="weekly-bar-track" style="height:${MAX_BAR_PX}px" title="${escapeHtml(t("wordsCount", count))}">
-          <div class="weekly-bar-count" style="bottom:${px + 4}px">${count}</div>
+          ${count > 0 ? `<div class="weekly-bar-count" style="bottom:${px + 4}px">${count}</div>` : ""}
           <div class="weekly-bar-fill" style="height:${px}px"></div>
         </div>
         <div class="weekly-bar-daylabel">${weekday}</div>
@@ -2097,27 +2052,28 @@ function renderLevelPicker(pickerId, lang, selectedId) {
   `).join("");
 }
 
-// Re-renders both level pickers with localized labels. Called with explicit
-// selections from renderSettings(); called with no args from
-// applyStaticTranslations() on a bare language switch, in which case it
-// preserves whatever was already selected in the DOM (falling back to the
-// first level id if nothing was selected yet).
-function renderLevelPickers(selectedEn, selectedDe) {
-  const curEn = selectedEn || $("level-picker-en").querySelector(".level-btn.selected")?.dataset.level || LEVEL_IDS.en[0];
-  const curDe = selectedDe || $("level-picker-de").querySelector(".level-btn.selected")?.dataset.level || LEVEL_IDS.de[0];
-  renderLevelPicker("level-picker-en", "en", curEn);
-  renderLevelPicker("level-picker-de", "de", curDe);
+// Home-screen reading-level picker — shows only the currently selected
+// language's levels (state.lang), and persists a tap immediately (there's
+// no separate "Save" step on the home screen, unlike Settings).
+function renderHomeLevelPicker(kidRecord, lang) {
+  const selected = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || LEVEL_IDS[lang][0];
+  renderLevelPicker("home-level-picker", lang, selected);
 }
 
-$("level-picker-en").addEventListener("click", (e) => {
+$("home-level-picker").addEventListener("click", async (e) => {
   const btn = e.target.closest(".level-btn");
   if (!btn) return;
-  $("level-picker-en").querySelectorAll(".level-btn").forEach((b) => b.classList.toggle("selected", b === btn));
-});
-$("level-picker-de").addEventListener("click", (e) => {
-  const btn = e.target.closest(".level-btn");
-  if (!btn) return;
-  $("level-picker-de").querySelectorAll(".level-btn").forEach((b) => b.classList.toggle("selected", b === btn));
+  const kid = state.currentKid;
+  const data = getData();
+  const kidRecord = data.kids[kid];
+  if (!kidRecord) return;
+  const lang = state.lang;
+  if (kidRecord.settings.levels[lang] === btn.dataset.level) return;
+  kidRecord.settings.levels[lang] = btn.dataset.level;
+  setData(data);
+  renderLevelPicker("home-level-picker", lang, btn.dataset.level);
+  queueOp({ type: "settings", key: `settings:${kid}`, payload: { kid, settings: kidRecord.settings } });
+  await flushQueue().catch(() => {});
 });
 
 function renderSettings() {
@@ -2134,7 +2090,6 @@ function renderSettings() {
   // kid with prior German progress but an unset germanEnabled field still
   // shows "On" correctly.
   setGermanToggleUI(germanUnlockedFor(kidRecord));
-  renderLevelPickers(kidRecord.settings.levels.en, kidRecord.settings.levels.de);
 
   $("confirm-reset").classList.add("hidden");
   $("confirm-delete-kid").classList.add("hidden");
@@ -2207,10 +2162,11 @@ $("btn-settings-save").addEventListener("click", async () => {
   const newName = requestedName || oldName;
   const wordsPerSession = clampNum(parseInt($("settings-words-per-session").value, 10), 5, 50, DEFAULT_SETTINGS.wordsPerSession);
   const newWordsPerDay = clampNum(parseInt($("settings-new-words-per-day").value, 10), 0, 10, DEFAULT_SETTINGS.newWordsPerDay);
-  const levelEn = $("level-picker-en").querySelector(".level-btn.selected")?.dataset.level || DEFAULT_SETTINGS.levels.en;
-  const levelDe = $("level-picker-de").querySelector(".level-btn.selected")?.dataset.level || DEFAULT_SETTINGS.levels.de;
   const germanEnabled = $("german-toggle").querySelector(".german-toggle-btn.active")?.dataset.german === "on";
-  const settings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe }, germanEnabled };
+  // Reading level is set live from the home screen, not here — carry the
+  // kid's current levels through unchanged.
+  const existingLevels = getData().kids[oldName]?.settings?.levels || DEFAULT_SETTINGS.levels;
+  const settings = { wordsPerSession, newWordsPerDay, levels: { ...existingLevels }, germanEnabled };
   const emoji = $("emoji-picker").querySelector(".emoji-btn.selected")?.dataset.emoji || "";
 
   const data = getData();
@@ -2266,41 +2222,6 @@ $("btn-delete-kid-confirm").addEventListener("click", async () => {
   toast(t("kidDeleted"));
   showScreen("screen-picker");
 });
-
-// ---- "Words I Know" screen ----
-// The kid-facing trophy case: every word she's ever practiced, in the
-// current UI language, with a 4-segment strength bar reflecting its live
-// spaced-repetition level. Mastered words furthest first — the collection
-// itself is meant to feel like something she's building up, not a sorted
-// data dump (that lives in Settings > Word mastery for the parent).
-const LEVEL_LABEL_KEY_BY_TIER = ["levelNew", "levelLearning", "levelFamiliar", "levelMastered"];
-const LEVEL_CLASS_BY_TIER = ["level-new", "level-learning", "level-familiar", "level-mastered"];
-
-function renderWordsIKnow() {
-  const kid = state.currentKid;
-  const lang = state.lang;
-  const data = getData();
-  const kidRecord = data.kids[kid];
-  if (!kidRecord) return;
-  const words = kidRecord[lang].words;
-
-  const entries = Object.keys(words).map((w) => ({ word: w, level: words[w].level }));
-  entries.sort((a, b) => b.level - a.level || a.word.localeCompare(b.word));
-
-  $("words-i-know-sub").textContent = t("wordsIKnowCount", entries.length);
-  $("words-i-know-list").innerHTML = entries.length ? entries.map((e) => `
-    <div class="words-i-know-row">
-      <span class="words-i-know-word">${escapeHtml(e.word)}</span>
-      <span class="strength-bar ${LEVEL_CLASS_BY_TIER[e.level]}" role="img" aria-label="${escapeHtml(t(LEVEL_LABEL_KEY_BY_TIER[e.level]))}">
-        ${[0, 1, 2, 3].map((i) => `<span class="strength-seg${i <= e.level ? " filled" : ""}"></span>`).join("")}
-      </span>
-      ${e.level === 3 ? `<span class="words-i-know-badge" aria-hidden="true">🏆</span>` : ""}
-    </div>
-  `).join("") : `<p class="settings-hint">${escapeHtml(t("noWordsYet"))}</p>`;
-}
-
-$("btn-words-i-know").addEventListener("click", () => showScreen("screen-words-i-know"));
-$("words-i-know-back").addEventListener("click", () => showScreen("screen-home"));
 
 // ------------------- init -------------------
 

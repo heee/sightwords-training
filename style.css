@@ -240,6 +240,12 @@ button { cursor: pointer; }
 }
 .level-btn:active { transform: scale(0.94); }
 
+/* Home-screen level picker sits right above the centered "Start practice"
+   button, so — unlike the left-aligned Settings version — it's centered
+   too, with its own label to match. */
+.home-level-picker { justify-content: center; margin-bottom: 1rem; }
+#label-home-level { text-align: center; }
+
 /* ---------------- Emoji picker (Settings > Avatar) ---------------- */
 
 .emoji-picker { margin-bottom: 0.5rem; }
@@ -366,8 +372,6 @@ button { cursor: pointer; }
   justify-content: space-between;
   margin-bottom: 1rem;
 }
-.home-topbar-left { display: flex; align-items: center; gap: 0.5rem; }
-
 #home-greeting { margin-top: 0.25rem; }
 
 .home-cards {
@@ -387,11 +391,6 @@ button { cursor: pointer; }
   gap: 1rem;
 }
 
-.card-streak { background: linear-gradient(135deg, color-mix(in srgb, var(--ochre) 35%, var(--card)), var(--card)); transition: background 0.3s ease; }
-.card-streak.no-streak { background: linear-gradient(135deg, color-mix(in srgb, var(--powder) 32%, var(--card)), var(--card)); }
-.card-icon { font-size: 2rem; }
-.card-big-text { font-size: 1.2rem; font-weight: 800; }
-.card-mid-text { font-size: 1.05rem; font-weight: 700; color: var(--ink-dim); }
 .card-sub-text { font-size: 0.95rem; font-weight: 700; color: var(--ink-dim); text-align: center; }
 
 .card-progress { flex-direction: column; align-items: stretch; }
@@ -863,27 +862,6 @@ button { cursor: pointer; }
 .confirm-box p { font-weight: 800; margin-bottom: 0.6rem; }
 .confirm-actions { display: flex; gap: 0.6rem; }
 .confirm-actions .btn { flex: 1; }
-
-/* ---------------- Words I Know ---------------- */
-
-.words-i-know-list { display: flex; flex-direction: column; gap: 0.6rem; }
-.words-i-know-row {
-  background: var(--card);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow);
-  padding: 0.75rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.words-i-know-word { font-weight: 800; font-size: 1.05rem; flex: 1; }
-.strength-bar { display: flex; gap: 3px; flex-shrink: 0; }
-.strength-seg { width: 1.1rem; height: 0.55rem; border-radius: 999px; background: var(--border); }
-.strength-bar.level-new .strength-seg.filled { background: var(--powder); }
-.strength-bar.level-learning .strength-seg.filled { background: var(--rose); }
-.strength-bar.level-familiar .strength-seg.filled { background: var(--ochre); }
-.strength-bar.level-mastered .strength-seg.filled { background: var(--sage); }
-.words-i-know-badge { font-size: 1.3rem; flex-shrink: 0; }
 
 /* ---------------- Toast ---------------- */
 
