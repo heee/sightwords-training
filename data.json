@@ -2,13 +2,14 @@
   "kids": {
     "Sophia": {
       "settings": {
-        "wordsPerSession": 20,
+        "wordsPerSession": 25,
         "newWordsPerDay": 3,
         "levels": {
           "en": "g4",
           "de": "k1"
         },
-        "germanEnabled": true
+        "germanEnabled": true,
+        "wordRatingEnabled": true
       },
       "en": {
         "words": {
