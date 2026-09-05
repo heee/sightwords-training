@@ -3,7 +3,7 @@
     "Sophia": {
       "settings": {
         "wordsPerSession": 25,
-        "newWordsPerDay": 3,
+        "newWordsPerDay": 5,
         "levels": {
           "en": "g4",
           "de": "k1"
