@@ -1711,7 +1711,13 @@ if (!cloudSpeechAvailable && !speechSupported) {
 function renderPracticeWord() {
   if (!state.session) return;
   const word = currentWord();
-  $("practice-word").textContent = word || "";
+  const wordEl = $("practice-word");
+  wordEl.textContent = word || "";
+  wordEl.classList.remove("len-md", "len-lg", "len-xl");
+  const len = (word || "").length;
+  if (len >= 10) wordEl.classList.add("len-xl");
+  else if (len >= 7) wordEl.classList.add("len-lg");
+  else if (len >= 5) wordEl.classList.add("len-md");
   $("practice-prompt").textContent = t("whatWord");
   $("mic-status").textContent = (cloudModeActive() || speechSupported) ? t("tapToListen") : "";
   $("feedback-wrong").classList.add("hidden");

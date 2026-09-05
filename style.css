@@ -552,11 +552,16 @@ button { cursor: pointer; }
   font-weight: 900;
   line-height: 1;
   font-size: clamp(3.6rem, 20vw, 8.5rem);
-  word-break: break-word;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  max-width: 92vw;
   color: var(--ink);
   transition: transform 0.15s ease;
 }
 .practice-word.shake { animation: shake 0.4s ease; }
+.practice-word.len-md { font-size: clamp(2.8rem, 15vw, 6.5rem); }
+.practice-word.len-lg { font-size: clamp(2.2rem, 11vw, 5rem); }
+.practice-word.len-xl { font-size: clamp(1.7rem, 8vw, 3.6rem); }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -908,6 +913,9 @@ button { cursor: pointer; }
   #app { max-width: 720px; }
   .screen { padding: 2.25rem 2.5rem 2.5rem; }
   .practice-word { font-size: clamp(4.5rem, 16vw, 11rem); }
+  .practice-word.len-md { font-size: clamp(3.4rem, 12vw, 8rem); }
+  .practice-word.len-lg { font-size: clamp(2.7rem, 9vw, 6rem); }
+  .practice-word.len-xl { font-size: clamp(2.1rem, 6.5vw, 4.4rem); }
   .mic-btn { width: 7.5rem; height: 7.5rem; }
   .mic-btn .mic-emoji { font-size: 3rem; }
 }
