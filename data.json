@@ -2,7 +2,7 @@
   "kids": {
     "Sophia": {
       "settings": {
-        "wordsPerSession": 25,
+        "wordsPerSession": 22,
         "newWordsPerDay": 5,
         "levels": {
           "en": "g4",
