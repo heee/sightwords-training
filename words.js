@@ -83,6 +83,15 @@ const WORDS = {
     "correspond", "criteria", "define", "demonstrate", "designate", "distinct", "distribute", "diverse", "domestic", "dominant",
     "efficient", "eliminate", "emphasis", "encounter", "enormous", "essential", "establish", "estimate", "evaluate", "evident",
     "evolve", "exceed", "exclude", "expand", "exceptional", "external", "extreme", "fundamental", "generate", "genuine",
+    // Kindergarten band (67 words) — Natalie's classroom sight-word list,
+    // kept in the exact order used on her take-home sheet (see LEVELS.en "kg").
+    "a", "to", "the", "in", "no", "go", "can", "and", "is", "I",
+    "he", "on", "into", "do", "at", "we", "see", "of", "it", "if",
+    "has", "had", "not", "all", "be", "put", "so", "up", "said", "was",
+    "will", "but", "like", "look", "as", "her", "for", "you", "his", "what",
+    "are", "that", "did", "get", "say", "eat", "make", "from", "my", "with",
+    "your", "use", "they", "she", "some", "then", "have", "give", "find", "help",
+    "went", "off", "best", "yes", "me", "little", "by",
   ],
 
   // ~200 common German first-reader sight words (Grundwortschatz Klasse 1/2
@@ -173,6 +182,7 @@ const WORDS = {
 // normally. See levelStartIndex() in app.js.
 const LEVELS = {
   en: [
+    { id: "kg", startIndex: 531 },  // Kindergarten band, appended after the Grade-6 band
     { id: "prek", startIndex: 0 },
     { id: "g1", startIndex: 92 },   // after pre-primer(40) + primer(52)
     { id: "g23", startIndex: 133 }, // after first grade(41)

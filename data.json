@@ -832,7 +832,7 @@
         "wordsPerSession": 15,
         "newWordsPerDay": 3,
         "levels": {
-          "en": "prek",
+          "en": "kg",
           "de": "prek"
         },
         "germanEnabled": true

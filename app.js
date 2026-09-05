@@ -270,6 +270,7 @@ const T = {
     newWordsPerDay: "New words per day",
     levelLabelEn: "Reading level 🇺🇸",
     levelLabelDe: "Reading level 🇩🇪",
+    levelEnKg: "Kindergarten",
     levelEnPrek: "Pre-K / K",
     levelEnG1: "1st grade",
     levelEnG23: "2nd/3rd grade",
@@ -371,6 +372,7 @@ const T = {
     newWordsPerDay: "Neue Wörter pro Tag",
     levelLabelEn: "Lesestufe 🇺🇸",
     levelLabelDe: "Lesestufe 🇩🇪",
+    levelEnKg: "Kindergarten",
     levelEnPrek: "Vorschule",
     levelEnG1: "1. Klasse",
     levelEnG23: "2./3. Klasse",
@@ -2079,7 +2081,7 @@ $("emoji-picker").addEventListener("click", (e) => {
 // the T dictionary so renderLevelPicker can localize each button's text.
 const LEVEL_LABEL_KEYS = {
   en: {
-    prek: "levelEnPrek", g1: "levelEnG1", g23: "levelEnG23",
+    kg: "levelEnKg", prek: "levelEnPrek", g1: "levelEnG1", g23: "levelEnG23",
     g4: "levelEnG4", g5: "levelEnG5", g6: "levelEnG6",
   },
   de: {
