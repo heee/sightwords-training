@@ -4,16 +4,16 @@
       "settings": {
         "wordsPerSession": 22,
         "newWordsPerDay": 5,
+        "spellingWordsPerSession": 10,
+        "spellingNewWordsPerDay": 5,
         "levels": {
-          "en": "g4",
+          "en": "g5",
           "de": "k1",
           "en-spelling": "s1"
         },
         "germanEnabled": true,
         "wordRatingEnabled": true,
-        "spellingEnabled": true,
-        "spellingWordsPerSession": 10,
-        "spellingNewWordsPerDay": 5
+        "spellingEnabled": true
       },
       "en": {
         "words": {
