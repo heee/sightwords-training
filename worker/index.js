@@ -4,21 +4,28 @@
 // into the app. The client only ever talks to this Worker.
 //
 //   GET  /data          -> current data.json contents (no auth required to read)
-//   POST /progress       -> { kid, lang: "en"|"de", words: { word: {level,correct,wrong,lastSeen,nextDue} },
+//   POST /progress       -> { kid, lang: "en"|"de"|"en-spelling", words: { word: {level,correct,wrong,lastSeen,nextDue} },
 //                              day: "YYYY-MM-DD", dayCount: N }
 //                            -> merges: overwrites the given word entries, and
 //                               days[day] = max(existing, dayCount). Creates the kid if missing.
+//                               "en-spelling" is a pseudo-language: the spelling-test feature's
+//                               own progress namespace, kept separate from "en" reading progress.
 //   POST /register-kid   -> { kid } -> creates an empty kid record with default settings if absent
 //   POST /settings       -> { kid, settings: { wordsPerSession, newWordsPerDay,
 //                              levels: { en: "kg"|"prek"|"g1"|"g23"|"g4"|"g5"|"g6",
-//                                        de: "prek"|"k1"|"k2"|"k3"|"k4"|"k5"|"k6" },
-//                              germanEnabled?: boolean, wordRatingEnabled?: boolean }, rename?, emoji? }
-//                            -> clamps ranges (5-50, 0-10); invalid/missing levels fall back to
-//                               defaults ("prek"/"prek"); rename moves the whole kid record;
-//                               emoji must be one of KID_EMOJIS or it's ignored; germanEnabled
-//                               is optional — persisted only if it's actually a boolean, any
-//                               other type (missing, string, number...) is ignored/not persisted
-//   POST /reset-kid      -> { kid } -> clears en/de progress + days, keeps kid + settings
+//                                        de: "prek"|"k1"|"k2"|"k3"|"k4"|"k5"|"k6",
+//                                        "en-spelling": "sk"|"s1"|"s2"|"s3" },
+//                              germanEnabled?: boolean, wordRatingEnabled?: boolean,
+//                              spellingEnabled?: boolean, spellingWordsPerSession, spellingNewWordsPerDay },
+//                              rename?, emoji? }
+//                            -> clamps ranges (5-50, 0-10 for both the reading and spelling word
+//                               counts); invalid/missing levels fall back to defaults
+//                               ("prek"/"prek"/"sk"); rename moves the whole kid record; emoji
+//                               must be one of KID_EMOJIS or it's ignored; germanEnabled/
+//                               wordRatingEnabled/spellingEnabled are optional — persisted only
+//                               if actually boolean, any other type (missing, string, number...)
+//                               is ignored/not persisted
+//   POST /reset-kid      -> { kid } -> clears en/de/en-spelling progress + days, keeps kid + settings
 //   POST /delete-kid     -> { kid } -> removes kid entirely
 //   POST /transcribe?lang=en|de -> body: raw audio bytes (Content-Type: audio/mp4 |
 //                            audio/webm[;codecs=...] | audio/ogg | audio/wav | audio/wave)
@@ -40,7 +47,11 @@
 //                            returns 501 and the client automatically falls back to the
 //                            in-browser Web Speech API.
 
-const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "prek" } };
+const DEFAULT_SETTINGS = {
+  wordsPerSession: 20, newWordsPerDay: 3,
+  levels: { en: "prek", de: "prek", "en-spelling": "sk" },
+  spellingWordsPerSession: 10, spellingNewWordsPerDay: 5,
+};
 const KID_EMOJIS = [
   "🦊", "🐻", "🐰", "🐼", "🦁", "🐨", "🐸", "🦋", "🐢", "🐬", "🦄", "🐝",
   "🐯", "🐷", "🐵", "🐔", "🐧", "🦉", "🐺", "🦝", "🦔", "🐌",
@@ -54,6 +65,7 @@ const MIN_NEW_WORDS_PER_DAY = 0;
 const VALID_LEVELS = {
   en: ["kg", "prek", "g1", "g23", "g4", "g5", "g6"],
   de: ["prek", "k1", "k2", "k3", "k4", "k5", "k6"],
+  "en-spelling": ["sk", "s1", "s2", "s3"],
 };
 
 function emptyKid() {
@@ -61,6 +73,7 @@ function emptyKid() {
     settings: { ...DEFAULT_SETTINGS, levels: { ...DEFAULT_SETTINGS.levels } },
     en: { words: {}, days: {} },
     de: { words: {}, days: {} },
+    "en-spelling": { words: {}, days: {} },
   };
 }
 
@@ -97,6 +110,10 @@ export default {
         await commitMutation(env, (data) => {
           if (!data.kids[parsed.kid]) data.kids[parsed.kid] = emptyKid();
           const kidRecord = data.kids[parsed.kid];
+          // Existing kids from before a lang namespace existed (e.g.
+          // "en-spelling" added after they were created) won't have this key
+          // yet — backfill it rather than assuming emptyKid() above covered it.
+          if (!kidRecord[parsed.lang]) kidRecord[parsed.lang] = { words: {}, days: {} };
           const langData = kidRecord[parsed.lang];
           for (const [word, entry] of Object.entries(parsed.words)) {
             langData.words[word] = entry;
@@ -144,20 +161,29 @@ export default {
       const rename = typeof body?.rename === "string" ? body.rename.trim().slice(0, 40) : "";
       const wordsPerSession = clamp(Math.floor(Number(body?.settings?.wordsPerSession)), MIN_WORDS_PER_SESSION, MAX_WORDS_PER_SESSION, DEFAULT_SETTINGS.wordsPerSession);
       const newWordsPerDay = clamp(Math.floor(Number(body?.settings?.newWordsPerDay)), MIN_NEW_WORDS_PER_DAY, MAX_NEW_WORDS_PER_DAY, DEFAULT_SETTINGS.newWordsPerDay);
+      const spellingWordsPerSession = clamp(Math.floor(Number(body?.settings?.spellingWordsPerSession)), MIN_WORDS_PER_SESSION, MAX_WORDS_PER_SESSION, DEFAULT_SETTINGS.spellingWordsPerSession);
+      const spellingNewWordsPerDay = clamp(Math.floor(Number(body?.settings?.spellingNewWordsPerDay)), MIN_NEW_WORDS_PER_DAY, MAX_NEW_WORDS_PER_DAY, DEFAULT_SETTINGS.spellingNewWordsPerDay);
       const levelEn = VALID_LEVELS.en.includes(body?.settings?.levels?.en) ? body.settings.levels.en : DEFAULT_SETTINGS.levels.en;
       const levelDe = VALID_LEVELS.de.includes(body?.settings?.levels?.de) ? body.settings.levels.de : DEFAULT_SETTINGS.levels.de;
+      const levelSpelling = VALID_LEVELS["en-spelling"].includes(body?.settings?.levels?.["en-spelling"])
+        ? body.settings.levels["en-spelling"] : DEFAULT_SETTINGS.levels["en-spelling"];
       const emoji = KID_EMOJIS.includes(body?.emoji) ? body.emoji : "";
       // Optional — any other type (missing, string, number, etc.) is simply
       // ignored (not persisted), same as the default/unset state.
       const germanEnabledProvided = typeof body?.settings?.germanEnabled === "boolean";
       const wordRatingEnabledProvided = typeof body?.settings?.wordRatingEnabled === "boolean";
+      const spellingEnabledProvided = typeof body?.settings?.spellingEnabled === "boolean";
 
       try {
         await commitMutation(env, (data) => {
           if (!data.kids[kid]) data.kids[kid] = emptyKid();
-          const newSettings = { wordsPerSession, newWordsPerDay, levels: { en: levelEn, de: levelDe } };
+          const newSettings = {
+            wordsPerSession, newWordsPerDay, spellingWordsPerSession, spellingNewWordsPerDay,
+            levels: { en: levelEn, de: levelDe, "en-spelling": levelSpelling },
+          };
           if (germanEnabledProvided) newSettings.germanEnabled = body.settings.germanEnabled;
           if (wordRatingEnabledProvided) newSettings.wordRatingEnabled = body.settings.wordRatingEnabled;
+          if (spellingEnabledProvided) newSettings.spellingEnabled = body.settings.spellingEnabled;
           data.kids[kid].settings = newSettings;
           if (emoji) data.kids[kid].emoji = emoji;
           if (rename && rename !== kid) {
@@ -187,6 +213,7 @@ export default {
           if (!data.kids[kid]) return;
           data.kids[kid].en = { words: {}, days: {} };
           data.kids[kid].de = { words: {}, days: {} };
+          data.kids[kid]["en-spelling"] = { words: {}, days: {} };
         }, `Reset progress: ${kid}`);
         return json({ ok: true }, 200, cors);
       } catch (e) {
@@ -317,7 +344,7 @@ function validateProgress(body) {
   if (!body || typeof body !== "object") return null;
   const kid = validKidName(body.kid);
   if (!kid) return null;
-  const lang = body.lang === "en" || body.lang === "de" ? body.lang : null;
+  const lang = body.lang === "en" || body.lang === "de" || body.lang === "en-spelling" ? body.lang : null;
   if (!lang) return null;
   const day = typeof body.day === "string" && DATE_RE.test(body.day) ? body.day : null;
   if (!day) return null;

@@ -130,8 +130,17 @@ button { cursor: pointer; }
 .btn-large { width: 100%; font-size: 1.15rem; padding: 1.1rem 1.4rem; }
 .btn-switch-kid { width: 100%; }
 
-.btn-start {
+/* Wraps the "Start reading" / "Start spelling" buttons so the pair, not
+   each button individually, gets pushed to the bottom of the home screen's
+   flex column. */
+.start-buttons-row {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.btn-start {
   border: none;
   border-radius: 24px;
   padding: 1.3rem;
@@ -144,6 +153,19 @@ button { cursor: pointer; }
   transition: transform 0.15s ease;
 }
 .btn-start:active { transform: scale(0.97); }
+
+/* Spelling is the secondary action on the home screen (reading is primary)
+   — a smaller, quieter button below it rather than an equally-weighted
+   twin, so the screen still reads as "one main thing to do". */
+.btn-start-spelling {
+  padding: 0.9rem;
+  font-size: 1.05rem;
+  min-height: 52px;
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow);
+}
 
 .text-input {
   width: 100%;
@@ -228,10 +250,47 @@ button { cursor: pointer; }
 }
 .level-btn:active { transform: scale(0.94); }
 
-/* Home-screen level picker sits right above the centered "Start practice"
-   button, so — unlike the left-aligned Settings version — it's centered
-   too, with its own label to match. */
-.home-level-picker { justify-content: center; margin-bottom: 1rem; }
+/* Home-screen level carousel — a single current-level label flanked by
+   prev/next arrows, replacing the multi-button grid so the home screen
+   reads as one compact control instead of a wall of pills. Settings keeps
+   the full grid (.level-picker above) since it's a less space-constrained,
+   less frequent action. Wraps around at either end rather than disabling
+   the arrows, matching typical carousel behavior. */
+.level-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.level-carousel-arrow {
+  border: 2px solid var(--border);
+  background: var(--card);
+  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
+}
+.level-carousel-arrow:active { transform: scale(0.9); }
+.level-carousel-current {
+  min-width: 9.5rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  border: 2px solid var(--sage);
+  background: color-mix(in srgb, var(--sage) 18%, var(--card));
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 #label-home-level { text-align: center; }
 
 /* ---------------- Emoji picker (Settings > Avatar) ---------------- */
@@ -382,16 +441,12 @@ button { cursor: pointer; }
 .card-sub-text { font-size: 0.95rem; font-weight: 700; color: var(--ink-dim); text-align: center; }
 
 .card-progress { flex-direction: column; align-items: stretch; }
-.progress-chunks-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
 /* Chunked "fill in a square per word" progress instead of a continuous
    thermometer bar — reads more like a countdown of discrete tasks, which
-   lands better with kids than a percentage-style fill. */
+   lands better with kids than a percentage-style fill. Kept on its own row,
+   left-to-right, with nothing else sharing the line — the count/message
+   pair lives in .progress-status-row below instead. */
 .progress-chunks {
-  flex: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
@@ -403,10 +458,30 @@ button { cursor: pointer; }
   background: var(--border);
   box-shadow: inset 0 2px 4px rgba(74, 68, 61, 0.12);
   transition: background 0.25s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
 }
 .progress-chunk.filled {
   background: linear-gradient(135deg, var(--sage), var(--powder));
   box-shadow: none;
+}
+/* A chunk beyond today's goal — rendered past the base goal-sized row once
+   the kid keeps going past 100%, in a distinct gold color with a star glyph
+   so "extra credit" reads differently at a glance from a normal filled
+   square instead of just silently capping at all-filled. */
+.progress-chunk.overflow {
+  background: linear-gradient(135deg, #E8B84B, #D9932E);
+  color: #fff;
+}
+.progress-status-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
 }
 .progress-bar-label {
   font-weight: 900;
@@ -634,6 +709,62 @@ button { cursor: pointer; }
   align-self: center;
   padding: 0.6rem 1rem;
   min-height: 48px;
+}
+
+/* Spelling flow — sits in place of .practice-mic-area on the same
+   #screen-practice (see renderPracticeWord's mode branch in app.js). */
+.spelling-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 0;
+  width: 100%;
+}
+.spelling-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: 100%;
+  max-width: 320px;
+}
+.spelling-input {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+.spelling-diff-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: 320px;
+}
+.spelling-diff-display {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+.spell-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  border-radius: 6px;
+  padding: 0.05em 0.1em;
+}
+.spell-letter.correct { color: var(--sage-deep); background: color-mix(in srgb, var(--sage) 30%, transparent); }
+.spell-letter.wrong { color: #fff; background: var(--rose); }
+.spell-letter.missing { color: var(--ink-dim); background: var(--border); opacity: 0.7; }
+.spelling-correct-answer {
+  font-weight: 800;
+  color: var(--ink-dim);
+  text-align: center;
 }
 
 /* Confetti burst — plain CSS, pastel palette, short-lived */

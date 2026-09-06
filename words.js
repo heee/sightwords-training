@@ -172,6 +172,49 @@ const WORDS = {
     "Komponente", "Bestandteil", "identifizieren", "interpretieren", "formulieren", "rechtfertigen", "verallgemeinern", "spezifizieren", "kombinieren", "integrieren",
     "unterscheiden", "einordnen", "reflektieren", "kritisieren", "erweitern", "einbeziehen", "berücksichtigen",
   ],
+
+  // Standalone spelling word list — a THIRD, independent "language" used
+  // only by the spelling-test feature (hear a word, type it). Kept separate
+  // from the `en` reading list above because a classroom spelling list is
+  // ordered/scoped by what's being taught that year, not by
+  // reading-frequency order — but it lives under this same WORDS object
+  // (as a pseudo-language key) so the existing reading/SRS/sync engine,
+  // which is generic over `lang`, works for spelling with no changes.
+  //
+  // Grade 1 (45 words) is Sophia's actual classroom take-home spelling
+  // sheet, transcribed exactly — do not reorder or edit it; stored per-kid
+  // spelling progress is keyed by these exact strings, same rule as the
+  // `en`/`de` lists above. The Kindergarten, Grade-2, and Grade-3 bands are
+  // NOT from an actual classroom sheet — they're inferred from standard
+  // Dolch grade-level word lists (K: common Dolch pre-primer basics;
+  // Grade 2/3: the standard Dolch 2nd/3rd grade lists, which happen to
+  // already appear as WORDS.en's "Second grade"/"Third grade" reading
+  // bands). Replace any of these three with the real classroom list once
+  // you have it.
+  "en-spelling": [
+    // Kindergarten (25) — inferred, standard early Dolch pre-primer basics
+    "a", "I", "the", "to", "and", "is", "it", "in", "my", "you",
+    "see", "like", "can", "go", "we", "up", "no", "yes", "on", "at",
+    "he", "she", "was", "said", "look",
+    // Grade 1 (45) — Sophia's actual classroom spelling list, exact order
+    "a", "the", "for", "to", "of", "said", "I", "was", "you", "like",
+    "are", "they", "your", "look", "why", "what", "my", "her", "she", "he",
+    "his", "or", "do", "who", "have", "how", "where", "there", "from", "here",
+    "want", "does", "one", "some", "were", "two", "too", "many", "there", "because",
+    "come", "give", "is", "off", "has",
+    // Grade 2 (46) — inferred, standard Dolch 2nd grade list
+    "always", "around", "because", "been", "before", "best", "both", "buy", "call", "cold",
+    "does", "don't", "fast", "first", "five", "found", "gave", "goes", "green", "its",
+    "made", "many", "off", "or", "pull", "read", "right", "sing", "sit", "sleep",
+    "tell", "their", "these", "those", "upon", "us", "use", "very", "wash", "which",
+    "why", "wish", "work", "would", "write", "your",
+    // Grade 3 (41) — inferred, standard Dolch 3rd grade list
+    "about", "better", "bring", "carry", "clean", "cut", "done", "draw", "drink", "eight",
+    "fall", "far", "full", "got", "grow", "hold", "hot", "hurt", "if", "keep",
+    "kind", "laugh", "light", "long", "much", "myself", "never", "only", "own", "pick",
+    "seven", "shall", "show", "six", "small", "start", "ten", "today", "together", "try",
+    "warm",
+  ],
 };
 
 // Reading-level entry points, as indices into the flat WORDS lists above.
@@ -198,5 +241,13 @@ const LEVELS = {
     { id: "k4", startIndex: 371 },  // after the Klasse-3 band(72)
     { id: "k5", startIndex: 440 },  // after the Klasse-4 band(69)
     { id: "k6", startIndex: 510 },  // after the Klasse-5 band(70)
+  ],
+  // Spelling-level entry points for the "en-spelling" pseudo-language above —
+  // same startIndex mechanic as en/de, just over the spelling word list.
+  "en-spelling": [
+    { id: "sk", startIndex: 0 },   // Kindergarten band
+    { id: "s1", startIndex: 25 },  // after Kindergarten(25)
+    { id: "s2", startIndex: 70 },  // after Kindergarten(25) + Grade-1(45)
+    { id: "s3", startIndex: 116 }, // after Grade-2(46)
   ],
 };

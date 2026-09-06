@@ -58,11 +58,11 @@
 
     <div class="home-cards">
       <div class="card card-progress">
-        <div class="progress-chunks-row">
-          <div id="progress-chunks" class="progress-chunks"></div>
-          <div id="progress-bar-label" class="progress-bar-label">0/20</div>
+        <div id="progress-chunks" class="progress-chunks"></div>
+        <div class="progress-status-row">
+          <span id="progress-bar-label" class="progress-bar-label">0/20</span>
+          <span id="progress-encouragement" class="card-sub-text">Let's get started!</span>
         </div>
-        <div id="progress-encouragement" class="card-sub-text">Let's get started!</div>
       </div>
 
       <div class="card card-weekly">
@@ -74,9 +74,16 @@
     </div>
 
     <label id="label-home-level" class="field-label">Reading level</label>
-    <div id="home-level-picker" class="level-picker home-level-picker" role="tablist"></div>
+    <div class="level-carousel">
+      <button id="btn-home-level-prev" type="button" class="level-carousel-arrow" aria-label="Previous level">‹</button>
+      <div id="home-level-picker" class="level-carousel-current" role="status" aria-live="polite"></div>
+      <button id="btn-home-level-next" type="button" class="level-carousel-arrow" aria-label="Next level">›</button>
+    </div>
 
-    <button id="btn-start-practice" type="button" class="btn-start">Start practice ▶</button>
+    <div class="start-buttons-row">
+      <button id="btn-start-reading" type="button" class="btn-start">Start reading ▶</button>
+      <button id="btn-start-spelling" type="button" class="btn-start btn-start-spelling hidden">Start spelling ✏️</button>
+    </div>
   </section>
 
   <!-- ============ SCREEN: PRACTICE ============ -->
@@ -117,7 +124,7 @@
       </div>
     </div>
 
-    <div class="practice-mic-area">
+    <div id="practice-mic-area" class="practice-mic-area">
       <button id="btn-mic" type="button" class="mic-btn" aria-label="Tap to listen">
         <span class="mic-emoji">🎤</span>
       </button>
@@ -128,6 +135,21 @@
       <button id="btn-hear-word" type="button" class="btn btn-secondary">🔊 Hear the word</button>
       <button id="btn-mark-correct" type="button" class="btn btn-secondary">✅ I said it right!</button>
       <button id="btn-next-word" type="button" class="btn btn-primary">Next ▸</button>
+    </div>
+
+    <div id="spelling-area" class="spelling-area hidden">
+      <button id="btn-spelling-hear" type="button" class="btn btn-secondary">🔊 Hear it again</button>
+      <form id="spelling-form" class="spelling-form">
+        <input id="spelling-input" class="text-input spelling-input" type="text"
+               autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+               placeholder="Type what you hear">
+        <button id="btn-spelling-submit" type="submit" class="btn btn-primary">Check</button>
+      </form>
+      <div id="spelling-diff-result" class="spelling-diff-result hidden">
+        <div id="spelling-diff-display" class="spelling-diff-display"></div>
+        <div id="spelling-correct-answer" class="spelling-correct-answer"></div>
+        <button id="btn-spelling-next" type="button" class="btn btn-primary">Next ▸</button>
+      </div>
     </div>
 
     <button id="btn-skip" type="button" class="btn-skip">Skip ▸</button>
@@ -183,6 +205,21 @@
         <button type="button" id="word-rating-toggle-off" class="lang-btn word-rating-toggle-btn" data-rating="off">Off</button>
         <button type="button" id="word-rating-toggle-on" class="lang-btn word-rating-toggle-btn active" data-rating="on">On</button>
       </div>
+
+      <label id="label-enable-spelling" class="field-label">✏️ Enable Spelling</label>
+      <div id="spelling-toggle" class="lang-toggle" role="tablist">
+        <button type="button" id="spelling-toggle-off" class="lang-btn spelling-toggle-btn active" data-spelling="off">Off</button>
+        <button type="button" id="spelling-toggle-on" class="lang-btn spelling-toggle-btn" data-spelling="on">On</button>
+      </div>
+
+      <label id="label-spelling-level" class="field-label">Spelling level</label>
+      <div id="settings-spelling-level-picker" class="level-picker" role="tablist"></div>
+
+      <label id="label-spelling-words-per-session" class="field-label">Spelling words per session</label>
+      <input id="settings-spelling-words-per-session" class="text-input" type="number" min="5" max="50" inputmode="numeric">
+
+      <label id="label-spelling-new-words-per-day" class="field-label">New spelling words per day</label>
+      <input id="settings-spelling-new-words-per-day" class="text-input" type="number" min="0" max="10" inputmode="numeric">
 
       <label id="label-kid-name" class="field-label">Kid's name</label>
       <input id="settings-kid-name" class="text-input" type="text" maxlength="40">

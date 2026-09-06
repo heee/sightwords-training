@@ -27,8 +27,16 @@ const LS = {
   newCount: "swt-new-today",
 };
 
-const DEFAULT_SETTINGS = { wordsPerSession: 20, newWordsPerDay: 3, levels: { en: "prek", de: "prek" } };
-const LEVEL_IDS = { en: LEVELS.en.map((l) => l.id), de: LEVELS.de.map((l) => l.id) };
+const DEFAULT_SETTINGS = {
+  wordsPerSession: 20, newWordsPerDay: 3,
+  levels: { en: "prek", de: "prek", "en-spelling": "sk" },
+  spellingEnabled: false, spellingWordsPerSession: 10, spellingNewWordsPerDay: 5,
+};
+const LEVEL_IDS = {
+  en: LEVELS.en.map((l) => l.id),
+  de: LEVELS.de.map((l) => l.id),
+  "en-spelling": LEVELS["en-spelling"].map((l) => l.id),
+};
 
 // Looks up the flat-list start index for a given language + level id —
 // words before this index are "assumed known" and never introduced as new.
@@ -91,6 +99,7 @@ const state = {
   // toggle click) so the cards don't jitter while visible.
   pickerShuffle: null,
   session: null,
+  lastSessionMode: null,
   // True while the "Read a Real Sentence" panel is showing in place of the
   // word/prompt (same screen, same mic button) — routes mic results to
   // sentence matching instead of single-word matching.
@@ -103,6 +112,11 @@ const state = {
   // showWordRating) — the word it's rating and what to do once rated.
   pendingRatingWord: null,
   pendingRatingCallback: null,
+  // Set while the spelling diff/result panel is showing (see
+  // handleSpellingSubmit) — the word just attempted and whether it was the
+  // moment it crossed into Mastered, read by the "Next" button's handler.
+  pendingSpellingWord: null,
+  pendingSpellingJustMastered: false,
   // Cloud speech (Groq) recording state — session-scoped, released on
   // session end / screen change (see releaseMic()).
   micStream: null,
@@ -181,6 +195,12 @@ function germanUnlockedFor(kidRecord) {
   return Object.keys((kidRecord.de && kidRecord.de.words) || {}).length > 0;
 }
 
+// Spelling is a brand-new feature with no legacy progress to fall back to
+// (unlike German above) — simply off unless explicitly turned on.
+function spellingEnabledFor(kidRecord) {
+  return !!(kidRecord.settings && kidRecord.settings.spellingEnabled === true);
+}
+
 function clampNum(n, min, max, fallback) {
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
@@ -223,9 +243,16 @@ const T = {
     last7Days: "Last 7 days",
     levelLabelHome: "Reading level",
     wordsCount: (n) => `${n} word${n === 1 ? "" : "s"}`,
-    startPractice: "Start practice ▶",
+    startReading: "Start reading ▶",
+    startSpelling: "Start spelling ✏️",
     speechUnsupported: "Speech isn't available here — open this page in Safari.",
     whatWord: "What word is this?",
+    spellPrompt: "Type what you hear",
+    spellingHearAgain: "🔊 Hear it again",
+    spellingCheck: "Check",
+    spellingNextWord: "Next ▸",
+    spellingCorrectLabel: "Correct spelling:",
+    spellingInputPlaceholder: "Type what you hear",
     tapToListen: "Tap to listen",
     listening: "Listening…",
     thinking: "Thinking…",
@@ -272,8 +299,16 @@ const T = {
     levelDeK4: "Grade 4",
     levelDeK5: "Grade 5",
     levelDeK6: "Grade 6",
+    levelSpellingSk: "Kindergarten",
+    levelSpellingS1: "1st grade",
+    levelSpellingS2: "2nd grade",
+    levelSpellingS3: "3rd grade",
     enableGerman: "🇩🇪 Enable German",
     wordRatingLabel: "Rate word difficulty",
+    enableSpelling: "✏️ Enable Spelling",
+    spellingLevelLabel: "Spelling level",
+    spellingWordsPerSessionLabel: "Spelling words per session",
+    spellingNewWordsPerDayLabel: "New spelling words per day",
     off: "Off",
     on: "On",
     nameUsedByAnother: "That name is already used by another kid.",
@@ -320,9 +355,16 @@ const T = {
     last7Days: "Letzte 7 Tage",
     levelLabelHome: "Lesestufe",
     wordsCount: (n) => `${n} ${n === 1 ? "Wort" : "Wörter"}`,
-    startPractice: "Übung starten ▶",
+    startReading: "Lesen starten ▶",
+    startSpelling: "Diktat starten ✏️",
     speechUnsupported: "Spracherkennung ist hier nicht verfügbar — öffne diese Seite in Safari.",
     whatWord: "Welches Wort ist das?",
+    spellPrompt: "Tippe, was du hörst",
+    spellingHearAgain: "🔊 Nochmal hören",
+    spellingCheck: "Prüfen",
+    spellingNextWord: "Weiter ▸",
+    spellingCorrectLabel: "Richtige Schreibweise:",
+    spellingInputPlaceholder: "Tippe, was du hörst",
     tapToListen: "Zum Zuhören tippen",
     listening: "Ich höre…",
     thinking: "Hmm, mal sehen…",
@@ -369,8 +411,16 @@ const T = {
     levelDeK4: "Klasse 4",
     levelDeK5: "Klasse 5",
     levelDeK6: "Klasse 6",
+    levelSpellingSk: "Kindergarten",
+    levelSpellingS1: "1. Klasse",
+    levelSpellingS2: "2. Klasse",
+    levelSpellingS3: "3. Klasse",
     enableGerman: "🇩🇪 Deutsch aktivieren",
     wordRatingLabel: "Wortschwierigkeit bewerten",
+    enableSpelling: "✏️ Diktat aktivieren",
+    spellingLevelLabel: "Diktat-Niveau",
+    spellingWordsPerSessionLabel: "Diktat-Wörter pro Sitzung",
+    spellingNewWordsPerDayLabel: "Neue Diktat-Wörter pro Tag",
     off: "Aus",
     on: "An",
     nameUsedByAnother: "Dieser Name wird bereits von einem anderen Kind verwendet.",
@@ -421,7 +471,8 @@ function applyStaticTranslations() {
   $("switch-kid-label").textContent = t("switchKid");
   $("btn-open-settings").setAttribute("aria-label", t("settings"));
   $("btn-open-settings").title = t("settings");
-  $("btn-start-practice").textContent = t("startPractice");
+  $("btn-start-reading").textContent = t("startReading");
+  $("btn-start-spelling").textContent = t("startSpelling");
   $("weekly-chart-title").textContent = t("last7Days");
   $("label-home-level").textContent = t("levelLabelHome");
 
@@ -430,6 +481,10 @@ function applyStaticTranslations() {
   $("btn-hear-word").textContent = t("hearWord");
   $("btn-mark-correct").textContent = t("markCorrect");
   $("btn-next-word").textContent = t("next");
+  $("btn-spelling-hear").textContent = t("spellingHearAgain");
+  $("spelling-input").placeholder = t("spellingInputPlaceholder");
+  $("btn-spelling-submit").textContent = t("spellingCheck");
+  $("btn-spelling-next").textContent = t("spellingNextWord");
   $("btn-skip").textContent = t("skip");
   $("btn-end-session").textContent = t("endSession");
   $("sentence-intro").textContent = t("sentenceIntro");
@@ -454,6 +509,12 @@ function applyStaticTranslations() {
   $("label-word-rating").textContent = t("wordRatingLabel");
   $("word-rating-toggle-off").textContent = t("off");
   $("word-rating-toggle-on").textContent = t("on");
+  $("label-enable-spelling").textContent = t("enableSpelling");
+  $("spelling-toggle-off").textContent = t("off");
+  $("spelling-toggle-on").textContent = t("on");
+  $("label-spelling-level").textContent = t("spellingLevelLabel");
+  $("label-spelling-words-per-session").textContent = t("spellingWordsPerSessionLabel");
+  $("label-spelling-new-words-per-day").textContent = t("spellingNewWordsPerDayLabel");
   $("label-kid-name").textContent = t("kidName");
   $("label-words-per-session").textContent = t("wordsPerSession");
   $("label-new-words-per-day").textContent = t("newWordsPerDay");
@@ -481,6 +542,7 @@ function emptyKidRecord() {
     settings: { ...DEFAULT_SETTINGS, levels: { ...DEFAULT_SETTINGS.levels } },
     en: { words: {}, days: {} },
     de: { words: {}, days: {} },
+    "en-spelling": { words: {}, days: {} },
   };
 }
 
@@ -509,11 +571,14 @@ function ensureDataShape() {
     if (!kid.settings || typeof kid.settings !== "object") kid.settings = { ...DEFAULT_SETTINGS, levels: { ...DEFAULT_SETTINGS.levels } };
     if (!Number.isFinite(kid.settings.wordsPerSession)) kid.settings.wordsPerSession = DEFAULT_SETTINGS.wordsPerSession;
     if (!Number.isFinite(kid.settings.newWordsPerDay)) kid.settings.newWordsPerDay = DEFAULT_SETTINGS.newWordsPerDay;
+    if (!Number.isFinite(kid.settings.spellingWordsPerSession)) kid.settings.spellingWordsPerSession = DEFAULT_SETTINGS.spellingWordsPerSession;
+    if (!Number.isFinite(kid.settings.spellingNewWordsPerDay)) kid.settings.spellingNewWordsPerDay = DEFAULT_SETTINGS.spellingNewWordsPerDay;
+    if (typeof kid.settings.spellingEnabled !== "boolean") kid.settings.spellingEnabled = DEFAULT_SETTINGS.spellingEnabled;
     if (!kid.settings.levels || typeof kid.settings.levels !== "object") kid.settings.levels = { ...DEFAULT_SETTINGS.levels };
-    for (const lang of ["en", "de"]) {
+    for (const lang of ["en", "de", "en-spelling"]) {
       if (!LEVEL_IDS[lang].includes(kid.settings.levels[lang])) kid.settings.levels[lang] = LEVEL_IDS[lang][0];
     }
-    for (const lang of ["en", "de"]) {
+    for (const lang of ["en", "de", "en-spelling"]) {
       if (!kid[lang] || typeof kid[lang] !== "object") kid[lang] = { words: {}, days: {} };
       if (!kid[lang].words || typeof kid[lang].words !== "object") kid[lang].words = {};
       if (!kid[lang].days || typeof kid[lang].days !== "object") kid[lang].days = {};
@@ -773,15 +838,22 @@ function startSession(kid, lang) {
   const data = getData();
   const kidRecord = data.kids[kid];
   if (!kidRecord) { state.session = null; return; }
+  const mode = lang === "en-spelling" ? "spelling" : "reading";
   const langData = kidRecord[lang];
   const today = todayStr();
   const alreadyIntroduced = getNewIntroducedToday(kid, lang, today);
   const levelId = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || LEVEL_IDS[lang][0];
   const startIndex = levelStartIndex(lang, levelId);
-  const { queue } = buildSession(langData, WORDS[lang], kidRecord.settings, today, alreadyIntroduced, startIndex);
+  // Spelling has its own, separate words-per-session/new-words-per-day
+  // settings (app.js:2261-ish persistCurrentSettings) — reading's global
+  // settings object is used unmodified for the "en"/"de" case.
+  const sessionSettings = mode === "spelling"
+    ? { wordsPerSession: kidRecord.settings.spellingWordsPerSession, newWordsPerDay: kidRecord.settings.spellingNewWordsPerDay }
+    : kidRecord.settings;
+  const { queue } = buildSession(langData, WORDS[lang], sessionSettings, today, alreadyIntroduced, startIndex);
 
   state.session = {
-    kid, lang, today,
+    kid, lang, mode, today,
     queue,
     index: 0,
     requeued: new Set(),
@@ -1601,6 +1673,7 @@ function renderHome() {
   const today = todayStr();
 
   $("home-greeting").textContent = t("greeting", kid, kidEmojiFor(kidRecord, kid));
+  $("btn-start-spelling").classList.toggle("hidden", !spellingEnabledFor(kidRecord));
 
   renderHomeLevelPicker(kidRecord, lang);
 
@@ -1619,13 +1692,20 @@ function renderHome() {
 
 // One square per word in today's goal, filled left to right as the kid
 // practices — a chunked countdown instead of a continuous fill, which reads
-// more concretely to a kid than a percentage-style bar. Overflow past the
-// goal (a session that ran long) just leaves every square filled.
+// more concretely to a kid than a percentage-style bar. Practicing past the
+// goal appends extra gold, star-marked "overflow" squares after the base
+// row instead of just leaving everything filled, so going above 100% is
+// visibly rewarded rather than looking identical to hitting the goal exactly.
 function renderProgressChunks(count, goal) {
   const n = Math.max(0, goal);
-  $("progress-chunks").innerHTML = Array.from({ length: n }, (_, i) =>
+  const overflow = Math.max(0, count - n);
+  const base = Array.from({ length: n }, (_, i) =>
     `<span class="progress-chunk${i < count ? " filled" : ""}"></span>`
   ).join("");
+  const extra = Array.from({ length: overflow }, () =>
+    `<span class="progress-chunk filled overflow">★</span>`
+  ).join("");
+  $("progress-chunks").innerHTML = base + extra;
 }
 
 // Bar chart of the last 7 days (oldest to newest, ending today): height and
@@ -1680,7 +1760,22 @@ function startPracticeSession() {
   prewarmMic();
 }
 
-$("btn-start-practice").addEventListener("click", startPracticeSession);
+$("btn-start-reading").addEventListener("click", startPracticeSession);
+
+// Spelling reuses the same #screen-practice as reading (see
+// renderPracticeWord's mode branch below) — just typed, not spoken, so no
+// mic to prewarm.
+function startSpellingSession() {
+  startSession(state.currentKid, "en-spelling");
+  if (!state.session || state.session.queue.length === 0) {
+    toast(t("noWordsAvailable"));
+    state.session = null;
+    return;
+  }
+  showScreen("screen-practice");
+}
+
+$("btn-start-spelling").addEventListener("click", startSpellingSession);
 
 // ---- practice screen ----
 
@@ -1691,7 +1786,32 @@ if (!cloudSpeechAvailable && !speechSupported) {
 
 function renderPracticeWord() {
   if (!state.session) return;
+  const isSpelling = state.session.mode === "spelling";
   const word = currentWord();
+
+  $("practice-mic-area").classList.toggle("hidden", isSpelling);
+  $("spelling-area").classList.toggle("hidden", !isSpelling);
+  $("feedback-wrong").classList.add("hidden");
+  $("mastery-celebration").classList.add("hidden");
+  hideWordRating();
+  state.pendingRatingWord = null;
+  state.pendingRatingCallback = null;
+  clearTimeout(state.autoAdvanceTimer);
+  updatePracticeProgress();
+
+  if (isSpelling) {
+    // Never reveal the word text — she has to spell it from hearing it.
+    $("practice-word").textContent = "";
+    $("practice-prompt").textContent = t("spellPrompt");
+    $("spelling-diff-result").classList.add("hidden");
+    $("spelling-form").classList.remove("hidden");
+    const input = $("spelling-input");
+    input.value = "";
+    if (word) speakWord(word, "en");
+    setTimeout(() => input.focus(), 50);
+    return;
+  }
+
   const wordEl = $("practice-word");
   wordEl.textContent = word || "";
   wordEl.classList.remove("len-md", "len-lg", "len-xl");
@@ -1701,17 +1821,10 @@ function renderPracticeWord() {
   else if (len >= 5) wordEl.classList.add("len-md");
   $("practice-prompt").textContent = t("whatWord");
   $("mic-status").textContent = "";
-  $("feedback-wrong").classList.add("hidden");
-  $("mastery-celebration").classList.add("hidden");
-  hideWordRating();
-  state.pendingRatingWord = null;
-  state.pendingRatingCallback = null;
   if (state.sentenceActive) hideSentencePanel();
   updateMicWrongState(false);
   state.session.lastWrongWord = null;
   state.session.lastWrongPriorEntry = null;
-  clearTimeout(state.autoAdvanceTimer);
-  updatePracticeProgress();
 }
 
 function updateMicWrongState(wrong) {
@@ -1736,12 +1849,12 @@ function updatePracticeProgress() {
   }
 }
 
-function shakeWord() {
-  const el = $("practice-word");
+function shakeElement(el) {
   el.classList.remove("shake");
   void el.offsetWidth; // reflow to restart the animation
   el.classList.add("shake");
 }
+function shakeWord() { shakeElement($("practice-word")); }
 
 function burstConfetti(container) {
   const colors = ["var(--sage)", "var(--rose)", "var(--ochre)", "var(--powder)"];
@@ -2029,6 +2142,66 @@ $("btn-next-word").addEventListener("click", () => {
   advanceSessionAndRender();
 });
 
+// ---- spelling flow (types on #screen-practice alongside the reading/mic
+// flow above — see renderPracticeWord's mode branch) ----
+
+// Simple positional (index-by-index) compare, not a full edit-distance
+// alignment — good enough at this word length to show her which letters
+// landed right vs wrong, closer to how a teacher's red pen marks a sheet.
+function renderSpellingDiff(typed, correctWord) {
+  let html = "";
+  for (let i = 0; i < typed.length; i++) {
+    const isRight = typed[i].toLowerCase() === (correctWord[i] || "").toLowerCase();
+    html += `<span class="spell-letter ${isRight ? "correct" : "wrong"}">${escapeHtml(typed[i])}</span>`;
+  }
+  if (typed.length < correctWord.length) {
+    html += `<span class="spell-letter missing">${escapeHtml(correctWord.slice(typed.length))}</span>`;
+  }
+  $("spelling-diff-display").innerHTML = html;
+  $("spelling-correct-answer").textContent = `${t("spellingCorrectLabel")} ${correctWord}`;
+}
+
+$("spelling-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const s = state.session;
+  if (!s) return;
+  const word = currentWord();
+  const typed = $("spelling-input").value.trim();
+  if (!typed) return;
+  const correct = typed.toLowerCase() === word.toLowerCase();
+
+  renderSpellingDiff(typed, word);
+  $("spelling-form").classList.add("hidden");
+  $("spelling-diff-result").classList.remove("hidden");
+
+  const { justMastered } = recordAnswer(word, correct);
+  if (correct) { playChime(); burstConfetti($("confetti-layer")); }
+  else { shakeElement($("spelling-diff-display")); }
+  state.pendingSpellingWord = word;
+  state.pendingSpellingJustMastered = justMastered;
+});
+
+$("btn-spelling-hear").addEventListener("click", () => {
+  if (!state.session) return;
+  speakWord(currentWord(), "en");
+});
+
+$("btn-spelling-next").addEventListener("click", () => {
+  const word = state.pendingSpellingWord;
+  const justMastered = state.pendingSpellingJustMastered;
+  state.pendingSpellingWord = null;
+  state.pendingSpellingJustMastered = false;
+  if (!word) return;
+  if (justMastered) { showMasteryCelebration(word); return; }
+  const data = getData();
+  const s = state.session;
+  if (s && wordRatingEnabledFor(data.kids[s.kid])) {
+    showWordRating(word, () => advanceSessionAndRender());
+  } else {
+    advanceSessionAndRender();
+  }
+});
+
 // Skipping must never shrink how much the child ends up practicing: the
 // skipped word is pushed back onto the end of the queue (so she still has
 // to face it) and marked red in the breadcrumb at its original slot.
@@ -2064,12 +2237,18 @@ function showSummary(s) {
   $("summary-stars").textContent = stars;
   $("summary-count").textContent = t("correctCount", s.correctCount, s.practicedCount);
   $("summary-practiced").textContent = t("practicedCount", s.practicedCount);
+  // endSession() nulls state.session right after calling this — stash the
+  // mode so "Play again" knows whether to relaunch reading or spelling.
+  state.lastSessionMode = s.mode;
   showScreen("screen-summary");
   burstConfetti($("summary-confetti"));
 }
 
 $("btn-summary-home").addEventListener("click", () => showScreen("screen-home"));
-$("btn-summary-again").addEventListener("click", startPracticeSession);
+$("btn-summary-again").addEventListener("click", () => {
+  if (state.lastSessionMode === "spelling") startSpellingSession();
+  else startPracticeSession();
+});
 
 // ---- settings screen ----
 
@@ -2114,6 +2293,9 @@ const LEVEL_LABEL_KEYS = {
     prek: "levelDePrek", k1: "levelDeK1", k2: "levelDeK2",
     k3: "levelDeK3", k4: "levelDeK4", k5: "levelDeK5", k6: "levelDeK6",
   },
+  "en-spelling": {
+    sk: "levelSpellingSk", s1: "levelSpellingS1", s2: "levelSpellingS2", s3: "levelSpellingS3",
+  },
 };
 
 function renderLevelPicker(pickerId, lang, selectedId) {
@@ -2123,29 +2305,43 @@ function renderLevelPicker(pickerId, lang, selectedId) {
   `).join("");
 }
 
-// Home-screen reading-level picker — shows only the currently selected
-// language's levels (state.lang), and persists a tap immediately (there's
-// no separate "Save" step on the home screen, unlike Settings).
+// Home-screen reading-level picker — a compact carousel (current level name
+// flanked by prev/next arrows) instead of the full button grid Settings
+// uses, since the home screen has less room and this is a quick, frequent
+// glance/adjust rather than a deliberate one-time choice. Shows only the
+// currently selected language's levels (state.lang), and persists a tap
+// immediately (there's no separate "Save" step on the home screen, unlike
+// Settings).
 function renderHomeLevelPicker(kidRecord, lang) {
-  const selected = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || LEVEL_IDS[lang][0];
-  renderLevelPicker("home-level-picker", lang, selected);
+  const ids = LEVEL_IDS[lang];
+  const selected = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || ids[0];
+  $("home-level-picker").textContent = t(LEVEL_LABEL_KEYS[lang][selected]);
+  $("home-level-picker").dataset.level = selected;
 }
 
-$("home-level-picker").addEventListener("click", async (e) => {
-  const btn = e.target.closest(".level-btn");
-  if (!btn) return;
+// Wraps around at either end (index -1 -> last, index length -> 0) rather
+// than disabling the arrows at the edges — simpler than tracking disabled
+// state, and looping reads as normal carousel behavior.
+async function stepHomeLevel(delta) {
   const kid = state.currentKid;
   const data = getData();
   const kidRecord = data.kids[kid];
   if (!kidRecord) return;
   const lang = state.lang;
-  if (kidRecord.settings.levels[lang] === btn.dataset.level) return;
-  kidRecord.settings.levels[lang] = btn.dataset.level;
+  const ids = LEVEL_IDS[lang];
+  const current = (kidRecord.settings.levels && kidRecord.settings.levels[lang]) || ids[0];
+  const nextIndex = (ids.indexOf(current) + delta + ids.length) % ids.length;
+  const nextId = ids[nextIndex];
+  if (current === nextId) return;
+  kidRecord.settings.levels[lang] = nextId;
   setData(data);
-  renderLevelPicker("home-level-picker", lang, btn.dataset.level);
+  renderHomeLevelPicker(kidRecord, lang);
   queueOp({ type: "settings", key: `settings:${kid}`, payload: { kid, settings: kidRecord.settings } });
   await flushQueue().catch(() => {});
-});
+}
+
+$("btn-home-level-prev").addEventListener("click", () => stepHomeLevel(-1));
+$("btn-home-level-next").addEventListener("click", () => stepHomeLevel(1));
 
 function renderSettings() {
   const kid = state.currentKid;
@@ -2162,6 +2358,11 @@ function renderSettings() {
   // shows "On" correctly.
   setGermanToggleUI(germanUnlockedFor(kidRecord));
   setWordRatingToggleUI(kidRecord.settings.wordRatingEnabled !== false);
+  setSpellingToggleUI(spellingEnabledFor(kidRecord));
+  const spellingLevel = (kidRecord.settings.levels && kidRecord.settings.levels["en-spelling"]) || LEVEL_IDS["en-spelling"][0];
+  renderLevelPicker("settings-spelling-level-picker", "en-spelling", spellingLevel);
+  $("settings-spelling-words-per-session").value = kidRecord.settings.spellingWordsPerSession;
+  $("settings-spelling-new-words-per-day").value = kidRecord.settings.spellingNewWordsPerDay;
 
   $("confirm-reset").classList.add("hidden");
   $("confirm-delete-kid").classList.add("hidden");
@@ -2239,10 +2440,20 @@ async function persistCurrentSettings() {
   const newWordsPerDay = clampNum(parseInt($("settings-new-words-per-day").value, 10), 0, 10, DEFAULT_SETTINGS.newWordsPerDay);
   const germanEnabled = $("german-toggle").querySelector(".german-toggle-btn.active")?.dataset.german === "on";
   const wordRatingEnabled = $("word-rating-toggle").querySelector(".word-rating-toggle-btn.active")?.dataset.rating !== "off";
-  // Reading level is set live from the home screen, not here — carry the
-  // kid's current levels through unchanged.
+  const spellingEnabled = $("spelling-toggle").querySelector(".spelling-toggle-btn.active")?.dataset.spelling === "on";
+  const spellingWordsPerSession = clampNum(parseInt($("settings-spelling-words-per-session").value, 10), 5, 50, DEFAULT_SETTINGS.spellingWordsPerSession);
+  const spellingNewWordsPerDay = clampNum(parseInt($("settings-spelling-new-words-per-day").value, 10), 0, 10, DEFAULT_SETTINGS.spellingNewWordsPerDay);
+  // Reading level (en/de) is set live from the home screen, not here — carry
+  // those through unchanged. Spelling level IS picked here, though, since
+  // its picker lives in Settings, not on the home screen.
   const existingLevels = getData().kids[oldName]?.settings?.levels || DEFAULT_SETTINGS.levels;
-  const settings = { wordsPerSession, newWordsPerDay, levels: { ...existingLevels }, germanEnabled, wordRatingEnabled };
+  const spellingLevel = $("settings-spelling-level-picker").querySelector(".level-btn.selected")?.dataset.level
+    || existingLevels["en-spelling"] || LEVEL_IDS["en-spelling"][0];
+  const levels = { ...existingLevels, "en-spelling": spellingLevel };
+  const settings = {
+    wordsPerSession, newWordsPerDay, levels, germanEnabled, wordRatingEnabled,
+    spellingEnabled, spellingWordsPerSession, spellingNewWordsPerDay,
+  };
   const emoji = $("emoji-picker").querySelector(".emoji-btn.selected")?.dataset.emoji || "";
 
   const data = getData();
@@ -2292,6 +2503,29 @@ $("word-rating-toggle").addEventListener("click", (e) => {
   persistCurrentSettings();
 });
 
+function setSpellingToggleUI(isOn) {
+  document.querySelectorAll("#spelling-toggle .spelling-toggle-btn").forEach((b) => {
+    b.classList.toggle("active", (b.dataset.spelling === "on") === isOn);
+  });
+}
+
+$("spelling-toggle").addEventListener("click", (e) => {
+  const btn = e.target.closest(".spelling-toggle-btn");
+  if (!btn) return;
+  setSpellingToggleUI(btn.dataset.spelling === "on");
+  persistCurrentSettings();
+});
+
+$("settings-spelling-level-picker").addEventListener("click", (e) => {
+  const btn = e.target.closest(".level-btn");
+  if (!btn) return;
+  renderLevelPicker("settings-spelling-level-picker", "en-spelling", btn.dataset.level);
+  persistCurrentSettings();
+});
+
+$("settings-spelling-words-per-session").addEventListener("change", persistCurrentSettings);
+$("settings-spelling-new-words-per-day").addEventListener("change", persistCurrentSettings);
+
 $("btn-reset-progress").addEventListener("click", () => $("confirm-reset").classList.remove("hidden"));
 $("btn-reset-cancel").addEventListener("click", () => $("confirm-reset").classList.add("hidden"));
 $("btn-reset-confirm").addEventListener("click", async () => {
@@ -2299,6 +2533,7 @@ $("btn-reset-confirm").addEventListener("click", async () => {
   const data = getData();
   data.kids[kid].en = { words: {}, days: {} };
   data.kids[kid].de = { words: {}, days: {} };
+  data.kids[kid]["en-spelling"] = { words: {}, days: {} };
   setData(data);
   $("confirm-reset").classList.add("hidden");
   queueOp({ type: "reset-kid", key: `reset-kid:${kid}`, payload: { kid } });
@@ -2363,7 +2598,7 @@ async function init() {
   const data = getData();
   if (lastKid && data.kids[lastKid]) state.currentKid = lastKid;
 
-  showScreen("screen-picker");
+  showScreen(state.currentKid ? "screen-home" : "screen-picker");
 }
 
 init();

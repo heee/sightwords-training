@@ -6,10 +6,14 @@
         "newWordsPerDay": 5,
         "levels": {
           "en": "g4",
-          "de": "k1"
+          "de": "k1",
+          "en-spelling": "s1"
         },
         "germanEnabled": true,
-        "wordRatingEnabled": true
+        "wordRatingEnabled": true,
+        "spellingEnabled": true,
+        "spellingWordsPerSession": 10,
+        "spellingNewWordsPerDay": 5
       },
       "en": {
         "words": {
@@ -867,7 +871,11 @@
           "2026-08-02": 11
         }
       },
-      "emoji": "🐹"
+      "emoji": "🐹",
+      "en-spelling": {
+        "words": {},
+        "days": {}
+      }
     },
     "Natalie": {
       "settings": {
@@ -875,9 +883,13 @@
         "newWordsPerDay": 3,
         "levels": {
           "en": "kg",
-          "de": "prek"
+          "de": "prek",
+          "en-spelling": "sk"
         },
-        "germanEnabled": true
+        "germanEnabled": true,
+        "spellingEnabled": false,
+        "spellingWordsPerSession": 10,
+        "spellingNewWordsPerDay": 5
       },
       "en": {
         "words": {
@@ -1500,7 +1512,11 @@
           "2026-07-21": 22
         }
       },
-      "emoji": "🦒"
+      "emoji": "🦒",
+      "en-spelling": {
+        "words": {},
+        "days": {}
+      }
     }
   }
 }
