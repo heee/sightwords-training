@@ -941,15 +941,15 @@
       "settings": {
         "wordsPerSession": 15,
         "newWordsPerDay": 3,
+        "spellingWordsPerSession": 10,
+        "spellingNewWordsPerDay": 5,
         "levels": {
-          "en": "kg",
+          "en": "g6",
           "de": "prek",
           "en-spelling": "sk"
         },
         "germanEnabled": true,
-        "spellingEnabled": false,
-        "spellingWordsPerSession": 10,
-        "spellingNewWordsPerDay": 5
+        "spellingEnabled": false
       },
       "en": {
         "words": {
