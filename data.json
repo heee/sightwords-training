@@ -1157,7 +1157,7 @@
         },
         "germanEnabled": true,
         "wordRatingEnabled": true,
-        "spellingEnabled": true
+        "spellingEnabled": false
       },
       "en": {
         "words": {
