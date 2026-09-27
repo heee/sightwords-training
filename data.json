@@ -1156,7 +1156,8 @@
           "en-spelling": "sk"
         },
         "germanEnabled": true,
-        "spellingEnabled": false
+        "wordRatingEnabled": true,
+        "spellingEnabled": true
       },
       "en": {
         "words": {
