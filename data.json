@@ -935,7 +935,7 @@
     "Sophia Victoria  Buchholz": {
       "settings": {
         "wordsPerSession": 5,
-        "newWordsPerDay": 5,
+        "newWordsPerDay": 10,
         "spellingWordsPerSession": 50,
         "spellingNewWordsPerDay": 1,
         "levels": {
