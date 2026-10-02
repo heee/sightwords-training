@@ -12,7 +12,7 @@
           "en-spelling": "s1"
         },
         "germanEnabled": true,
-        "wordRatingEnabled": true,
+        "wordRatingEnabled": false,
         "spellingEnabled": true
       },
       "en": {
