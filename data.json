@@ -937,7 +937,7 @@
         "wordsPerSession": 50,
         "newWordsPerDay": 10,
         "spellingWordsPerSession": 50,
-        "spellingNewWordsPerDay": 1,
+        "spellingNewWordsPerDay": 5,
         "levels": {
           "en": "g6",
           "de": "k1",
