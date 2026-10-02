@@ -1130,6 +1130,46 @@
             "lastSeen": "2026-09-26",
             "nextDue": "2026-09-27",
             "firstSeen": "2026-09-26"
+          },
+          "want": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-02",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-02"
+          },
+          "does": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-02",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-02"
+          },
+          "one": {
+            "level": 0,
+            "correct": 0,
+            "wrong": 1,
+            "lastSeen": "2026-10-02",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-02"
+          },
+          "some": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-02",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-02"
+          },
+          "were": {
+            "level": 0,
+            "correct": 0,
+            "wrong": 1,
+            "lastSeen": "2026-10-02",
+            "nextDue": "2026-10-03",
+            "firstSeen": "2026-10-02"
           }
         },
         "days": {
@@ -1140,7 +1180,8 @@
           "2026-09-12": 2,
           "2026-09-13": 2,
           "2026-09-20": 10,
-          "2026-09-26": 8
+          "2026-09-26": 8,
+          "2026-10-02": 5
         }
       }
     },
