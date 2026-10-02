@@ -4,7 +4,7 @@
       "settings": {
         "wordsPerSession": 22,
         "newWordsPerDay": 5,
-        "spellingWordsPerSession": 10,
+        "spellingWordsPerSession": 50,
         "spellingNewWordsPerDay": 5,
         "levels": {
           "en": "g6",
