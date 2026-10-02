@@ -11,7 +11,7 @@
           "de": "k1",
           "en-spelling": "s1"
         },
-        "germanEnabled": true,
+        "germanEnabled": false,
         "wordRatingEnabled": true,
         "spellingEnabled": true
       },
