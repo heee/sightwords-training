@@ -942,7 +942,7 @@
     },
     "Sophia Victoria  Buchholz": {
       "settings": {
-        "wordsPerSession": 50,
+        "wordsPerSession": 5,
         "newWordsPerDay": 10,
         "spellingWordsPerSession": 5,
         "spellingNewWordsPerDay": 5,
