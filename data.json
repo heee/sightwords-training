@@ -1560,6 +1560,46 @@
             "lastSeen": "2026-10-02",
             "nextDue": "2026-10-04",
             "firstSeen": "2026-10-02"
+          },
+          "communicate": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-03",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-03"
+          },
+          "accomplish": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-03",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-03"
+          },
+          "achieve": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-03",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-03"
+          },
+          "acquire": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-03",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-03"
+          },
+          "accurate": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-03",
+            "nextDue": "2026-10-04",
+            "firstSeen": "2026-10-03"
           }
         },
         "days": {
@@ -1581,7 +1621,8 @@
           "2026-09-05": 40,
           "2026-09-06": 22,
           "2026-09-07": 1,
-          "2026-10-02": 9
+          "2026-10-02": 9,
+          "2026-10-03": 5
         }
       },
       "de": {
