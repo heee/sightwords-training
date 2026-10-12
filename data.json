@@ -4,7 +4,7 @@
       "settings": {
         "wordsPerSession": 15,
         "newWordsPerDay": 3,
-        "spellingWordsPerSession": 10,
+        "spellingWordsPerSession": 5,
         "spellingNewWordsPerDay": 5,
         "levels": {
           "en": "kg",
