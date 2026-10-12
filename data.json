@@ -13,7 +13,7 @@
         },
         "germanEnabled": true,
         "wordRatingEnabled": true,
-        "spellingEnabled": false
+        "spellingEnabled": true
       },
       "en": {
         "words": {
