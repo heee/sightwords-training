@@ -2232,6 +2232,46 @@
             "lastSeen": "2026-10-11",
             "nextDue": "2026-10-12",
             "firstSeen": "2026-10-11"
+          },
+          "give": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-12",
+            "nextDue": "2026-10-13",
+            "firstSeen": "2026-10-12"
+          },
+          "is": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-12",
+            "nextDue": "2026-10-13",
+            "firstSeen": "2026-10-12"
+          },
+          "off": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-12",
+            "nextDue": "2026-10-13",
+            "firstSeen": "2026-10-12"
+          },
+          "has": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-12",
+            "nextDue": "2026-10-13",
+            "firstSeen": "2026-10-12"
+          },
+          "around": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-10-12",
+            "nextDue": "2026-10-13",
+            "firstSeen": "2026-10-12"
           }
         },
         "days": {
@@ -2244,7 +2284,8 @@
           "2026-09-20": 10,
           "2026-09-26": 8,
           "2026-10-02": 5,
-          "2026-10-11": 5
+          "2026-10-11": 5,
+          "2026-10-12": 5
         }
       }
     }
