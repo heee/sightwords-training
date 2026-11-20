@@ -2313,8 +2313,35 @@
         "spellingEnabled": false
       },
       "en": {
-        "words": {},
-        "days": {}
+        "words": {
+          "a": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-11-19",
+            "nextDue": "2026-11-21",
+            "firstSeen": "2026-11-19"
+          },
+          "and": {
+            "level": 1,
+            "correct": 2,
+            "wrong": 3,
+            "lastSeen": "2026-11-19",
+            "nextDue": "2026-11-20",
+            "firstSeen": "2026-11-19"
+          },
+          "away": {
+            "level": 1,
+            "correct": 1,
+            "wrong": 0,
+            "lastSeen": "2026-11-19",
+            "nextDue": "2026-11-20",
+            "firstSeen": "2026-11-19"
+          }
+        },
+        "days": {
+          "2026-11-19": 7
+        }
       },
       "de": {
         "words": {},
