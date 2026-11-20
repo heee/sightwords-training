@@ -2298,6 +2298,31 @@
           "2026-10-12": 5
         }
       }
+    },
+    "Olivia": {
+      "settings": {
+        "wordsPerSession": 20,
+        "newWordsPerDay": 3,
+        "levels": {
+          "en": "prek",
+          "de": "prek",
+          "en-spelling": "sk"
+        },
+        "spellingWordsPerSession": 10,
+        "spellingNewWordsPerDay": 5
+      },
+      "en": {
+        "words": {},
+        "days": {}
+      },
+      "de": {
+        "words": {},
+        "days": {}
+      },
+      "en-spelling": {
+        "words": {},
+        "days": {}
+      }
     }
   }
 }
