@@ -2303,13 +2303,14 @@
       "settings": {
         "wordsPerSession": 20,
         "newWordsPerDay": 3,
+        "spellingWordsPerSession": 10,
+        "spellingNewWordsPerDay": 5,
         "levels": {
-          "en": "prek",
+          "en": "kg",
           "de": "prek",
           "en-spelling": "sk"
         },
-        "spellingWordsPerSession": 10,
-        "spellingNewWordsPerDay": 5
+        "spellingEnabled": false
       },
       "en": {
         "words": {},
